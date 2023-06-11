@@ -1,0 +1,16 @@
+autotools
+base
+base-devel
+ccache
+clang
+cmake
+filesystem
+gcc
+git
+mingw-w64-x86_64-arm-none-eabi-gcc
+mingw-w64-x86_64-autotools
+mingw-w64-x86_64-perl
+mingw-w64-x86_64-python
+msys2-runtime
+subversion
+vim
