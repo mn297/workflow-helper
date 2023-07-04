@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cortex Debug",
+            "cwd": "${workspaceFolder}",
+            "executable": "C:/Users/USERNAME/SimplicityStudio/v5_workspace/PROJECT_NAME/build/debug/PROJECT.out",
+            "request": "launch",
+            "type": "cortex-debug",
+            "armToolchainPath": "C:/SiliconLabs/SimplicityStudio/v5/developer/toolchains/gnu_arm/10.3_2021.10/bin",
+            "runToEntryPoint": "main",
+            "servertype": "jlink",
+            "serverpath": "C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe",
+            "device": "EFR32MG22CxxxF512",
+            "interface": "swd",
+            "serverArgs": ["-endian", "little", "-speed", "1000", "-ir", "-localhostonly", "1", "-singlerun", "-strict", "-timeout", "0"],
+        }
+    ]
+}
