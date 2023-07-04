@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "flashDevice",
+            "type": "shell",
+            "command": "jlink -device EFR32MG22CxxxF512 -if SWD -speed 1000 -autoconnect 1 -CommanderScript flash.jlink",
+            "problemMatcher": []
+        }
+    ]
+}
