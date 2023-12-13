@@ -14,3 +14,14 @@ lazygit() {
     git push
   fi
 }
+
+lazyffm() {
+    if [ -z "$1" ]; then
+        echo "Usage: lazyffm <file.ts>"
+        return 1
+    fi
+    input_file=$1
+    output_file="${input_file%.ts}.mkv"
+    ffmpeg -i "$input_file" -c copy "$output_file"
+}
+
