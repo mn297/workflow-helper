@@ -22,7 +22,7 @@ $XButton2::
 	while GetKeyState("XButton2", "p")
 	{
 		Send {WheelDown}
-		Sleep, 10
+		Sleep, 1
 	}
 	Return
 vkE2::Backspace ;bubble
