@@ -9,7 +9,7 @@ $XButton1::
 	while GetKeyState("XButton1", "p")
 	{
 		Send {WheelUp}
-		Sleep, 10
+		Sleep, 1
 	}
 	Return
 
