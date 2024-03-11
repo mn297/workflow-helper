@@ -47,7 +47,16 @@ source ~/powerlevel10k/powerlevel10k.zsh-theme
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 alias scon='unset PYENV_VERSION; export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/miniconda3/bin:$PATH"'
-alias sros='unset PYENV_VERSION; export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/miniconda3/bin:$PATH"; conda activate ros_env; cd devel; source setup.bash; cd ..'
+# alias sros='unset PYENV_VERSION; export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/miniconda3/bin:$PATH"; conda activate ros_env; cd devel; source setup.bash; cd ..'
+sros() {
+    unset PYENV_VERSION
+    export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/miniconda3/bin:$PATH"
+    conda activate ros_env
+    if cd devel; then
+        source setup.bash
+        cd ..
+    fi
+}
 # alias sros='conda activate ros_env; cd devel; source setup.bash; cd ..'
 
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
