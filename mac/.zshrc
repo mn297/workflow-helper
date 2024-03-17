@@ -5,8 +5,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-alias brew='env PATH="${PATH//$(pyenv root)\/shims:/}" brew'
-alias brew="env PATH=(string replace (pyenv root)/shims '' \"\$PATH\") brew"
+
 lazygit() {
   if [ "$1" = "--amend" ]; then
     if [ "$2" = "--message" ] || [ "$2" = "-m" ]; then
@@ -57,7 +56,6 @@ sros() {
         cd ..
     fi
 }
-# alias sros='conda activate ros_env; cd devel; source setup.bash; cd ..'
 
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
@@ -66,3 +64,6 @@ source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
+
+# Load Angular CLI autocompletion.
+source <(ng completion script)
