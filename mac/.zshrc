@@ -45,8 +45,18 @@ source ~/powerlevel10k/powerlevel10k.zsh-theme
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-alias scon='unset PYENV_VERSION; export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/miniconda3/bin:$PATH"'
+# alias scon='unset PYENV_VERSION; export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/miniconda3/bin:$PATH"'
 # alias sros='unset PYENV_VERSION; export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/miniconda3/bin:$PATH"; conda activate ros_env; cd devel; source setup.bash; cd ..'
+scon() {
+    unset PYENV_VERSION
+    export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/miniconda3/bin:$PATH"
+    if [ -n "$1" ]; then
+        conda activate "$1"
+    else
+        echo "No environment specified. Just setting PATH."
+    fi
+}
+
 sros() {
     unset PYENV_VERSION
     export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/miniconda3/bin:$PATH"
@@ -67,3 +77,18 @@ eval "$(pyenv init -)"
 
 # Load Angular CLI autocompletion.
 source <(ng completion script)
+export PATH="/opt/homebrew/opt/ssh-copy-id/bin:$PATH"
+export PATH="/opt/homebrew/opt/ssh-copy-id/bin:$PATH"
+
+PATH="/Users/user2/perl5/bin${PATH:+:${PATH}}"; export PATH;
+PERL5LIB="/Users/user2/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
+PERL_LOCAL_LIB_ROOT="/Users/user2/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
+PERL_MB_OPT="--install_base \"/Users/user2/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=/Users/user2/perl5"; export PERL_MM_OPT;
+
+# bun completions
+[ -s "/Users/user2/.bun/_bun" ] && source "/Users/user2/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
