@@ -68,3 +68,10 @@ sros() {
 
 # Load Angular CLI autocompletion.
 source <(ng completion script)
+
+# WSL
+codewsl() {
+  local pwd_clip="cd /mnt$(pwd | sed 's/^\/mnt//')"
+  echo $pwd_clip | clip.exe
+  code --remote wsl+Ubuntu
+}
