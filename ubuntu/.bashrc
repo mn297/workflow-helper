@@ -1,4 +1,5 @@
-alias sros='source /opt/ros/noetic/setup.bash'
+# alias sros='source /opt/ros/noetic/setup.bash'
+alias sros='source /opt/ros/noetic/setup.bash && [ -f devel/setup.bash ] && source devel/setup.bash'
 
 gsettings set org.gnome.desktop.interface enable-animations false
 
