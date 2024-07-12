@@ -94,3 +94,7 @@ PERL_MM_OPT="INSTALL_BASE=/Users/user2/perl5"; export PERL_MM_OPT;
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+
+# list in MB and full path
+alias ll='ls -alhF'
