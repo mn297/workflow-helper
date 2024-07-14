@@ -8,6 +8,10 @@ lazygit() {
       git commit --amend
     fi
     git push --force
+  elif [ "$1" = "--fixup" ]; then
+    git add .
+    git commit --fixup HEAD
+    git push
   else
     git add .
     git commit -m "$1"
