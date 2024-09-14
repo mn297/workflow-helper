@@ -1,3 +1,7 @@
+# Clean up PATH for VSCODE
+terminal_path=$(zsh -l -c 'echo $PATH')
+export PATH="$terminal_path"
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -71,16 +75,28 @@ sros() {
         cd ..
     fi
 }
+alias kros='pkill -f rosmaster ; pkill -f roscore ; rosnode kill -a ; pkill -f ros ; pkill -f gzserver; pkill -f gzclient'
 
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 
 # pyenv settings
 export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+
+# Ensure pyenv bin directory is in PATH
+if [[ -d "$PYENV_ROOT/bin" ]]; then
+  export PATH="$PYENV_ROOT/bin:$PATH"
+fi
+
+# Initialize pyenv
 eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
+
+# autocomplete
+zstyle ':completion:*' menu select
+bindkey '^ ' autosuggest-accept
+
 
 # Load Angular CLI autocompletion.
 source <(ng completion script)
@@ -100,6 +116,14 @@ PERL_MM_OPT="INSTALL_BASE=/Users/user2/perl5"; export PERL_MM_OPT;
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
+# Jax MPS
+export JAX_ENABLE_X64=True
+export ENABLE_PJRT_COMPATIBILITY=1
+
+export TURTLEBOT3_MODEL=burger
+
+sros
 
 # list in MB and full path
 alias ll='ls -alhF'
+export HOST="localhost"
