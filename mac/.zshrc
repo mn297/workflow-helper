@@ -122,7 +122,7 @@ export ENABLE_PJRT_COMPATIBILITY=1
 
 export TURTLEBOT3_MODEL=burger
 
-sros
+# sros
 
 # list in MB and full path
 alias ll='ls -alhF'
