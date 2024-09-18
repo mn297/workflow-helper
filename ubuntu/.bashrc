@@ -21,6 +21,8 @@ lazygit() {
 
 # alias sros='source /opt/ros/noetic/setup.bash'
 alias sros='source /opt/ros/noetic/setup.bash && [ -f devel/setup.bash ] && source devel/setup.bash'
+alias kros='killall -9 roscore rosmaster rosout roslaunch rosmaster; rosnode cleanup ; rosnode kill -a ; killall -9
+gzclient ; killall -9 gzserver ;'
 
 gsettings set org.gnome.desktop.interface enable-animations false
 
