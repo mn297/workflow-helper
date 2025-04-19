@@ -31,5 +31,20 @@ vkE2::Backspace ;bubble
 !`::Send {Backspace}
 ;!vkC0::BackSpace ; tilde
 ;!vkC0::XButton1
-!1::XButton1
-!2::XButton2
+; !1::XButton1
+; !2::XButton2
+
+!1::Send, #1  ; Alt+1 → Win+1
+!2::Send, #2  ; Alt+2 → Win+2
+!3::Send, #3
+!4::Send, #4
+!5::Send, #5
+!6::Send, #6
+!7::Send, #7
+!8::Send, #8
+!9::Send, #9
+!e::Send, #6
+!+s::Send, #+s  ; Alt+Shift+S sends Win+Shift+S
+!Up::Send, #{Up}    ; Alt+Up → Win+Up (maximize)
+!Down::Send, #{Down}  ; Alt+Down → Win+Down (restore/minimize)
+
