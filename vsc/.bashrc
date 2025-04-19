@@ -28,6 +28,9 @@ fflazy() {
   output_file="${input_file%.ts}.mkv"
   ffmpeg -i "$input_file" -c copy "$output_file"
 }
+# ffmpeg -i bansheechapter.ts -map 0 -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k bansheechapter_fixed.mkv
+# ffmpeg -i bansheechapter.ts -map 0:v -map 0:a -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k bansheechapter_fixed.mkv
+
 
 # alias scon='source "$HOME/miniconda3/Scripts/activate"'
 # scon() {
@@ -39,12 +42,14 @@ fflazy() {
 # }
 scon() {
   # Unset other Python paths if necessary
+  unset PYENV_ROOT
+  unset PYENV_HOME
+  unset PYENV
   unset PYTHONHOME
   unset PYTHONPATH
-  unset PYENV
 
   source "$HOME/anaconda3/Scripts/activate" "$HOME/anaconda3"
-  source "$HOME/miniconda3/Scripts/activate" "$HOME/miniconda3"
+  # source "$HOME/miniconda3/Scripts/activate" "$HOME/miniconda3"
 
   if [ -n "$1" ]; then
     conda activate "$1"
@@ -70,12 +75,47 @@ sros() {
 
 }
 
+senv() {
+  # Unset other Python paths if necessary
+  unset PYTHONHOME
+  unset PYTHONPATH
+  unset PYENV
+
+  source "./venv/Scripts/activate" "./venv"
+}
+
+# Load pyenv automatically by adding
+# export PYENV_ROOT="$HOME/.pyenv"
+# [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+# eval "$(pyenv init --path)"
+# eval "$(pyenv init -)"
+# eval "$(pyenv virtualenv-init -)"
+
+# export PYENV_ROOT="$HOME/.pyenv"
+# export PATH="$PYENV_ROOT/bin:$PATH"
+# echo $PYENV_ROOT
+# echo $PATH
+# eval "$(pyenv init --path)"
+# eval "$(pyenv init -)"
+# eval "$(pyenv virtualenv-init -)"
+
 # Load Angular CLI autocompletion.
 source <(ng completion script)
 
 # WSL
 codewsl() {
-  local pwd_clip="cd /mnt$(pwd | sed 's/^\/mnt//')"
+  local pwd_clip="code /mnt$(pwd | sed 's/^\/mnt//')"
   echo $pwd_clip | clip.exe
   code --remote wsl+Ubuntu
 }
+
+getwsl() {
+  local pwd_clip="/mnt$(pwd | sed 's/^\/mnt//')"
+  echo $pwd_clip
+  echo $pwd_clip | clip.exe
+}
+
+alias pio_run='"/c/Users/john/.platformio/penv/Scripts/platformio.exe" run --environment teensy40'
+
+alias penv='source ./venv/Scripts/activate'
+alias gclon='git clone'
