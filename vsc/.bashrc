@@ -103,10 +103,12 @@ senv() {
 source <(ng completion script)
 
 # WSL
-codewsl() {
-  local pwd_clip="code /mnt$(pwd | sed 's/^\/mnt//')"
-  echo $pwd_clip | clip.exe
-  code --remote wsl+Ubuntu
+export IDE_NAME="windsurf"
+
+openwsl() {
+    local pwd_clip="$IDE_NAME /mnt$(pwd | sed 's/^\/mnt//')"
+    echo $pwd_clip | clip.exe
+    $IDE_NAME --remote wsl+Ubuntu
 }
 
 getwsl() {
