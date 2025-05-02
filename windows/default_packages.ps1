@@ -2,10 +2,6 @@ $pkgs = @(
     "Brave.Brave",
     "voidtools.Everything",
     "xanderfrangos.twinkletray",
-    "Git.Git",
-    "Codeium.Windsurf",
-    "Microsoft.VisualStudioCode",
-    "Microsoft.VisualStudio.2022.Community",
     "PDFsam.PDFsam",
     "JavadMotallebi.NeatDownloadManager",
     "VB-Audio.Voicemeeter.Banana",
@@ -19,6 +15,7 @@ $pkgs = @(
     "Oracle.VirtualBox",
     "Nvidia.CUDA",
     "MPC-BE.MPC-BE",
+    # "Spotify.Spotify",
     "BlenderFoundation.Blender",
     "Unity.UnityHub",
     "Valve.Steam",
@@ -31,7 +28,14 @@ $pkgs = @(
     "geeksoftwareGmbH.PDF24Creator",
     "Creality.CrealityPrint",
     "SoftFever.OrcaSlicer",
-    "GIMP.GIMP.3"
+    "GIMP.GIMP.3",
+    # .NET Runtimes
+    "Microsoft.DotNet.DesktopRuntime.5",
+    "Microsoft.DotNet.DesktopRuntime.6",
+    "Microsoft.DotNet.DesktopRuntime.7",
+    "Microsoft.DotNet.DesktopRuntime.8",
+    "Microsoft.DotNet.DesktopRuntime.9",
+    "Microsoft.WindowsAppRuntime.1.7"
 )
 
 foreach ($pkg in $pkgs) {
