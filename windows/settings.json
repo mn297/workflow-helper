@@ -1,0 +1,128 @@
+{
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "**/*.olean": true
+    },
+    "editor.mouseWheelZoom": true,
+    "idf.espIdfPathWin": "D:/esp/esp-idf/",
+    "idf.pythonBinPathWin": "D:/esp/.espressif/python_env/idf4.3_py3.8_env/Scripts/python.exe",
+    "idf.toolsPathWin": "D:\\esp\\.espressif",
+    "idf.customExtraPaths": "D:\\esp\\.espressif\\tools\\xtensa-esp32-elf\\esp-2021r1-8.4.0\\xtensa-esp32-elf\\bin;D:\\esp\\.espressif\\tools\\xtensa-esp32s2-elf\\esp-2021r1-8.4.0\\xtensa-esp32s2-elf\\bin;D:\\esp\\.espressif\\tools\\xtensa-esp32s3-elf\\esp-2021r1-8.4.0\\xtensa-esp32s3-elf\\bin;D:\\esp\\.espressif\\tools\\riscv32-esp-elf\\esp-2021r1-8.4.0\\riscv32-esp-elf\\bin;D:\\esp\\.espressif\\tools\\esp32ulp-elf\\2.28.51-esp-20191205\\esp32ulp-elf-binutils\\bin;D:\\esp\\.espressif\\tools\\esp32s2ulp-elf\\2.28.51-esp-20191205\\esp32s2ulp-elf-binutils\\bin;D:\\esp\\.espressif\\tools\\cmake\\3.16.4\\bin;D:\\esp\\.espressif\\tools\\openocd-esp32\\v0.10.0-esp32-20210401\\openocd-esp32\\bin;D:\\esp\\.espressif\\tools\\ninja\\1.10.2;D:\\esp\\.espressif\\tools\\idf-exe\\1.0.1;D:\\esp\\.espressif\\tools\\ccache\\3.7;D:\\esp\\.espressif\\tools\\dfu-util\\0.9\\dfu-util-0.9-win64",
+    "idf.customExtraVars": {
+      "OPENOCD_SCRIPTS": "D:\\esp\\.espressif\\tools\\openocd-esp32\\v0.10.0-esp32-20210401/openocd-esp32/share/openocd/scripts",
+      "IDF_CCACHE_ENABLE": "1"
+    },
+    "idf.gitPath": "D:/esp/.espressif/tools/idf-git/2.30.1/cmd/git.exe",
+    // "terminal.integrated.profiles.windows": {
+    //   "PowerShell": {
+    //     "source": "PowerShell",
+    //     "icon": "terminal-powershell"
+    //   },
+    //   "Command Prompt": {
+    //     "path": [
+    //       "${env:windir}\\Sysnative\\cmd.exe",
+    //       "${env:windir}\\System32\\cmd.exe"
+    //     ],
+    //     "args": [],
+    //     "icon": "terminal-cmd"
+    //   },
+    //   "Git Bash": {
+    //     "source": "Git Bash"
+    //   },
+    //   "esp_cmd": {
+    //     "path": "C:\\Windows\\System32\\cmd.exe",
+    //     "args": [
+    //       "/k" ,
+    //       "D:\\esp\\.espressif\\idf_cmd_init.bat esp-idf-38e1ac449f0ea355bd33af27f305028a"
+    //     ]
+    //   },
+    //   "MSYS2 MINGW64": {
+    //     "path": "C:\\msys64\\mingw64.exe",
+    //     "args": [
+    //       "-mingw64 -defterm -nostart",
+    //       "--login",
+    //     ]
+    //   },
+    //   "MSYS2": {
+    //     "path": "C:\\msys64\\usr\\bin\\bash.exe",
+    //     "args": [
+    //       "--login",
+    //       "-i"
+    //     ],
+    //     "env": {
+    //       "MSYSTEM": "MINGW64",
+    //       "CHERE_INVOKING": "1"
+    //     }
+    //   }
+    // },
+    "terminal.integrated.defaultProfile.windows": "MSYS2",
+    "terminal.integrated.profiles.windows": {
+      "MSYS2": {
+        "path": "C:\\msys64\\msys2_shell.cmd",
+        "args": [
+          "-defterm",
+          "-mingw64",
+          "-no-start",
+          "-here"
+        ],
+        "env": {
+          "MSYSTEM": "MINGW64",
+          "CHERE_INVOKING": "1"
+        }
+      },
+      // "MSYS2": {
+      //   "path": "C:\\msys64\\usr\\bin\\bash.exe",
+      //   "args": [
+      //     "--login",
+      //     "-i"
+      //   ],
+      //   "env": {
+      //     "MSYSTEM": "MINGW64",
+      //     "CHERE_INVOKING": "1"
+      //   }
+      // }
+    },
+    "explorer.confirmDelete": false,
+    "editor.unicodeHighlight.invisibleCharacters": false,
+    "vim.hlsearch": true,
+    "vim.useSystemClipboard": true,
+    "nrf-connect.welcome.showOnStartup": false,
+    "nrf-connect.enableTelemetry": false,
+    "explorer.confirmDragAndDrop": false,
+    "vim.vimrc.enable": true,
+    "vim.vimrc.path": "$HOME\\.vimrc",
+    "editor.accessibilitySupport": "off",
+    "arduino.path": "C:\\Program Files (x86)\\Arduino",
+    "security.workspace.trust.untrustedFiles": "open",
+    "editor.fontFamily": "Fira Code",
+    // "editor.fontLigatures": true,
+    "editor.fontWeight": "500",
+    "remote.SSH.remotePlatform": {
+      "mimi.cs.mcgill.ca": "linux",
+      "192.168.125.137": "linux",
+      "192.168.50.5": "linux",
+      "192.168.137.2": "linux"
+    },
+    "editor.inlineSuggest.enabled": true,
+    "idf.gitPathWin": "D:\\esp\\.espressif\\tools\\idf-git\\2.30.1\\cmd\\git.exe",
+    "workbench.colorTheme": "Cobalt2",
+    "github.copilot.enable": {
+      "*": true,
+      "yaml": false,
+      "plaintext": false,
+      "markdown": false
+    },
+    "[python]": {
+      "editor.formatOnType": true
+    },
+    "git.openRepositoryInParentFolders": "never",
+    "haskell.manageHLS": "GHCup",
+    "window.zoomLevel": -1,
+    "terminal.integrated.scrollback": 10000,
+    "git.autofetch": true
+  }
