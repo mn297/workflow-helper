@@ -17,8 +17,8 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #MaxThreadsPerHotkey 3
 
 
-!Down::Send {Volume_Down}
-!Up::Send {Volume_Up}
+; !Down::Send {Volume_Down}
+; !Up::Send {Volume_Up}
 
 $PgDn::
   Loop
