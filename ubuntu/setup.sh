@@ -38,7 +38,7 @@ bash; pyenv install 3.12.10;pyenv global 3.12.10
 
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 pip install ultralytics
-pip install exchange_calendars yfinance finrl stockstats wrds alpaca_trade_api gymnasium matplotlib numpy pandas seaborn stable-baselines3 ale-py gym-anytrading tqdm scipy scikit-learn dask-ml rich
+pip install exchange_calendars yfinance finrl stockstats wrds alpaca_trade_api gymnasium matplotlib numpy pandas seaborn stable-baselines3[extra] ale-py gym-anytrading tqdm scipy scikit-learn dask-ml rich sb3-contrib
 
 lspci | grep -i nvidia
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
