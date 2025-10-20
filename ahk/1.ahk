@@ -45,6 +45,6 @@ vkE2::Backspace ;bubble
 !9::Send, #9
 !e::Send, #6
 !+s::Send, #+s  ; Alt+Shift+S sends Win+Shift+S
-!Up::Send, #{Up}    ; Alt+Up → Win+Up (maximize)
-!Down::Send, #{Down}  ; Alt+Down → Win+Down (restore/minimize)
+;!Up::Send, #{Up}    ; Alt+Up → Win+Up (maximize)
+;!Down::Send, #{Down}  ; Alt+Down → Win+Down (restore/minimize)
 

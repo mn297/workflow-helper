@@ -1,0 +1,113 @@
+{
+    // VIM
+    "vim.smartRelativeLine": true,
+    "vim.sneak": true,
+    "vim.highlightedyank.enable": true,
+    "vim.easymotion": true, // https://github.com/easymotion/vim-easymotion
+    "vim.incsearch": true, // Show the next match while entering a search
+    "vim.useSystemClipboard": true, // Use the system clipboard register (*) as the default register
+    "vim.useCtrlKeys": true, // Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.
+    "vim.hlsearch": true, // Highlights all text matching current search
+    "vim.leader": "<Space>",
+    "vim.handleKeys": {
+        // Avoid Vim overriding VSCode default keybindings like find or select all in Windows
+        // These two keybindings below shouldn't matter in Mac
+        "<C-a>": false,
+        "<C-f>": false,
+        "<C-w>": false,
+        "<C-p>": false,
+        // "<C-c>": false, // Disable Ctrl+C to avoid overriding VSCode copy
+    },
+    "vim.normalModeKeyBindingsNonRecursive": [
+       // MOVEMENT
+    { "before": ["H"], "after": ["^"] },
+    { "before": ["g", "c", "c"], "after": ["g", "c", "c", "j"] },
+    { "before": ["H"], "after": ["^"] },
+    { "before": ["L"], "after": ["$"] },
+    // Centered scrolling
+    { "before": ["n"], "after": ["n", "z", "z", "z", "v"] },
+    { "before": ["N"], "after": ["N", "z", "z", "z", "v"] },
+    { "before": ["<C-j>"], "after": ["8", "j"] },
+    { "before": ["<C-k>"], "after": ["8", "k"] },
+    // Basic editing
+    { "before": ["<CR>"], "after": ["c", "i", "w"] },
+    { "before": ["y","L"], "after": ["y", "$"] },
+    { "before": ["y","H"], "after": ["y", "^"] },
+    { "before": ["c","H"], "after": ["c", "^"] },
+    // Quickfix navigation
+    { "before": ["[", "q"], "commands": [":cprev"] },
+    { "before": ["]", "q"], "commands": [":cnext"] },
+    // Windows
+    { "before": ["<leader>", "w"], "after": ["<C-w>"] },
+    { "before": ["<leader>", "-"], "after": ["<C-W>", "s"] },
+    { "before": ["<leader>", "|"], "after": ["<C-W>", "v"] },
+    // Delete with backspace
+    { "before": ["<BS>"], "after": ["x", "h"] },
+    // Yank entire file
+    { "before": ["<leader>", "y"], "after": [":", "%", "y", "<CR>"] },
+    // Yank till the end
+    { "before": ["Y"], "after": ["y", "$"] },
+    // visual select whole file
+    { "before": ["<leader>", "v"], "after": ["g", "g", "v", "G"] },
+    // Inner text object replacements
+    { "before": ["x", "i", "w"], "after": ["v", "i", "w", "P"] },
+    { "before": ["x", "i", "b"], "after": ["v", "i", "b", "P"] },  // () parentheses
+    { "before": ["x", "i", "("], "after": ["v", "i", "(", "P"] },  // () alternative
+    { "before": ["x", "i", ")"], "after": ["v", "i", ")", "P"] },  // () alternative
+    { "before": ["x", "i", "["], "after": ["v", "i", "[", "P"] },  // [] brackets
+    { "before": ["x", "i", "]"], "after": ["v", "i", "]", "P"] },  // [] alternative
+    { "before": ["x", "i", "{"], "after": ["v", "i", "{", "P"] },  // {} braces
+    { "before": ["x", "i", "}"], "after": ["v", "i", "}", "P"] },  // {} alternative
+    { "before": ["x", "i", "p"], "after": ["v", "i", "p", "P"] },  // paragraph
+    { "before": ["x", "i", "'"], "after": ["v", "i", "'", "P"] },  // single quotes
+    { "before": ["x", "i", "\""], "after": ["v", "i", "\"", "P"] }, // double quotes
+    { "before": ["x", "i", "`"], "after": ["v", "i", "`", "P"] },  // backticks
+    // Around text object replacements
+    { "before": ["x", "a", "w"], "after": ["v", "a", "w", "P"] },
+    { "before": ["x", "a", "b"], "after": ["v", "a", "b", "P"] },  // () parentheses
+    { "before": ["x", "a", "("], "after": ["v", "a", "(", "P"] },  // () alternative
+    { "before": ["x", "a", ")"], "after": ["v", "a", ")", "P"] },  // () alternative
+    { "before": ["x", "a", "["], "after": ["v", "a", "[", "P"] },  // [] brackets
+    { "before": ["x", "a", "]"], "after": ["v", "a", "]", "P"] },  // [] alternative
+    { "before": ["x", "a", "{"], "after": ["v", "a", "{", "P"] },  // {} braces
+    { "before": ["x", "a", "}"], "after": ["v", "a", "}", "P"] },  // {} alternative
+    { "before": ["x", "a", "p"], "after": ["v", "a", "p", "P"] },  // paragraph
+    { "before": ["x", "a", "'"], "after": ["v", "a", "'", "P"] },  // single quotes
+    { "before": ["x", "a", "\""], "after": ["v", "a", "\"", "P"] }, // double quotes
+    { "before": ["x", "a", "`"], "after": ["v", "a", "`", "P"] },  // backticks
+    // Replace to end of line
+    { "before": ["X"], "after": ["v", "$", "P"] },
+    ],
+    "vim.insertModeKeyBindingsNonRecursive": [
+      // Exit insert mode
+    { "before": ["k", "j"], "after": ["<Esc>", "l"] },
+    // Navigation in insert mode
+    { "before": ["<C-a>"], "after": ["<C-o>", "I"] },
+    { "before": ["<C-e>"], "after": ["<C-o>", "A"] },
+    { "before": ["<C-k>"], "after": ["<up>"] },
+    { "before": ["<C-j>"], "after": ["<down>"] },
+    { "before": ["<C-h>"], "after": ["<left>"] },
+    { "before": ["<C-l>"], "after": ["<right>"] },
+    ],
+    "vim.visualModeKeyBindingsNonRecursive": [
+    // MOVEMENT
+    {
+        "before": ["@"],
+        "after": [":", "'<", "'>", "n", "o", "r", "m", "a", "l", " ", "@", "@", "<CR>"]
+    },
+    { "before": ["H"], "after": ["^"] },
+    { "before": ["L"], "after": ["$", "h"] }, // correct weird offset
+    // Faster vertical movement
+    { "before": ["<C-j>"], "after": ["8", "j"] },
+    { "before": ["<C-k>"], "after": ["8", "k"] },
+    // Search in visual selection
+    { "before": ["/"], "after": ["\"", "f", "y", "/", "<C-r>", "f", "<CR>"] },
+    // Better indenting
+    { "before": ["<"], "after": ["<", "g", "v"] },
+    { "before": [">"], "after": [">", "g", "v"] },
+    // Enter to change selection
+    { "before": ["<CR>"], "after": ["c"] },
+    ],
+    "vim.commandLineModeKeyBindings": [ ],
+    "vim.commandLineModeKeyBindingsNonRecursive": []
+}
