@@ -1,4 +1,7 @@
 {
+    "editor.mouseWheelZoom": true,
+    "editor.smoothScrolling": true,
+
     // VIM
     "vim.smartRelativeLine": true,
     "vim.sneak": true,
