@@ -1,0 +1,32 @@
+{
+  "configurations": [
+    {
+      "name": "ROS2",
+      "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+      "includePath": [
+        "${workspaceFolder}/src/**",
+        "${workspaceFolder}/install/**/include",
+        "${workspaceFolder}/install/include",
+        "/usr/include",
+        "/usr/include/eigen3"
+      ],
+      "defines": [
+        "_GNU_SOURCE"
+      ],
+      "compilerPath": "/usr/bin/g++",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "linux-gcc-x64",
+      "configurationProvider": "ms-vscode.cmake-tools",
+      "browse": {
+        "path": [
+          "${workspaceFolder}/src",
+          "${workspaceFolder}/install",
+          "/usr/include"
+        ],
+        "limitSymbolsToIncludedHeaders": false
+      }
+    }
+  ],
+  "version": 4
+}
