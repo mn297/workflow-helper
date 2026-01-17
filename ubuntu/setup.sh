@@ -8,20 +8,21 @@ sudo apt update
 # Install essential build tools and utilities
 echo "Installing essential build tools..."
 sudo apt install -y \
-    build-essential \
-    cmake \
-    git \
-    gnupg \
-    lsb-release \
-    wget \
-    ninja-build \
-    clangd-12 \
-    ubuntu-drivers-common \
-    pciutils \
-    openjdk-17-jdk \
-    xbindkeys \
-    xdotool gcc-12 
-    
+	build-essential \
+	cmake \
+	git \
+	gnupg \
+	lsb-release \
+	wget \
+	ninja-build \
+	clangd-12 \
+	ubuntu-drivers-common \
+	pciutils \
+	openjdk-17-jdk \
+	xbindkeys \
+	xdotool gcc-12
+sudo snap install shfmt
+
 export CC=/usr/bin/gcc-12
 sudo -E apt install nvidia-driver-535
 
@@ -39,18 +40,18 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Install pyenv and dependencies
 echo "Installing pyenv dependencies..."
 sudo apt install -y \
-    libssl-dev \
-    zlib1g-dev \
-    libbz2-dev \
-    libreadline-dev \
-    libsqlite3-dev \
-    libncursesw5-dev \
-    xz-utils \
-    tk-dev \
-    libxml2-dev \
-    libxmlsec1-dev \
-    libffi-dev \
-    liblzma-dev
+	libssl-dev \
+	zlib1g-dev \
+	libbz2-dev \
+	libreadline-dev \
+	libsqlite3-dev \
+	libncursesw5-dev \
+	xz-utils \
+	tk-dev \
+	libxml2-dev \
+	libxmlsec1-dev \
+	libffi-dev \
+	liblzma-dev
 
 cd ~
 git clone https://github.com/rvaiya/keyd
@@ -62,7 +63,7 @@ sudo systemctl enable --now keyd
 sudo mkdir -p /etc/keyd
 
 # Write keyd configuration
-sudo tee /etc/keyd/default.conf > /dev/null <<'EOF'
+sudo tee /etc/keyd/default.conf >/dev/null <<'EOF'
 [ids]
 
 *
@@ -75,7 +76,6 @@ EOF
 
 sudo keyd reload
 
-
 # Install CUDA
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
 sudo dpkg -i cuda-keyring_1.1-1_all.deb
@@ -86,15 +86,14 @@ sudo apt install nvidia-cuda-toolkit
 # Download Isaac Sim
 # check if $HOME/isaacsim exists
 if [ ! -d "$HOME/isaacsim" ]; then
-    echo "Isaac Sim not found, downloading..."
-    ISAACSIM_URL="https://download.isaacsim.omniverse.nvidia.com/isaac-sim-standalone-5.1.0-linux-x86_64.zip"
-    ISAACSIM_ZIP="$HOME/isaacsim.zip"
-    ISAACSIM_DIR="$HOME/isaacsim"
-    wget -O "$ISAACSIM_ZIP" "$ISAACSIM_URL"
-    mkdir -p "$ISAACSIM_DIR"
-    unzip -o "$ISAACSIM_ZIP" -d "$ISAACSIM_DIR"
-    echo "Isaac Sim downloaded and extracted to $ISAACSIM_DIR"
+	echo "Isaac Sim not found, downloading..."
+	ISAACSIM_URL="https://download.isaacsim.omniverse.nvidia.com/isaac-sim-standalone-5.1.0-linux-x86_64.zip"
+	ISAACSIM_ZIP="$HOME/isaacsim.zip"
+	ISAACSIM_DIR="$HOME/isaacsim"
+	wget -O "$ISAACSIM_ZIP" "$ISAACSIM_URL"
+	mkdir -p "$ISAACSIM_DIR"
+	unzip -o "$ISAACSIM_ZIP" -d "$ISAACSIM_DIR"
+	echo "Isaac Sim downloaded and extracted to $ISAACSIM_DIR"
 else
-    echo "Isaac Sim already exists, skipping download..."
+	echo "Isaac Sim already exists, skipping download..."
 fi
-
