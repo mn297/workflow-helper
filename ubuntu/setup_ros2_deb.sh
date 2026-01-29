@@ -71,6 +71,7 @@ install_ros2() {
 	sudo apt install -y ros-humble-controller-interface ros-humble-realtime-tools ros-humble-ros2-control ros-humble-ros2-controllers
 	sudo apt install python-catkin-pkg python3-sphinx python3-sphinx-autodoc-typehints python3-sphinx-rtd-theme ros-humble-vision-msgs ros-humble-ackermann-msgs
 	sudo apt install -y ros-humble-xacro ros-humble-twist-mux ros-humble-navigation2 ros-humble-slam-toolbox ros-humble-octomap*
+	sudo apt install -y ros-humble-gazebo-ros-pkgs
 
 	########################
 	# 5. Environment setup hint
