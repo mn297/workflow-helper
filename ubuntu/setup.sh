@@ -15,16 +15,18 @@ sudo apt install -y \
 	lsb-release \
 	wget \
 	ninja-build \
-	clangd-12 \
 	ubuntu-drivers-common \
 	pciutils \
 	openjdk-17-jdk \
 	xbindkeys \
-	xdotool gcc-12
+	xdotool curl
 sudo snap install shfmt
 
-export CC=/usr/bin/gcc-12
-sudo -E apt install nvidia-driver-535
+sudo apt install ddcutil i2c-tools
+sudo usermod -aG i2c $USER
+ddcutil detect
+
+
 
 git config --global user.email "mn297@users.noreply.github.com"
 git config --global user.name "mn297"
@@ -37,21 +39,6 @@ sudo snap install chromium opera brave spotify
 echo "Installing uv..."
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install pyenv and dependencies
-echo "Installing pyenv dependencies..."
-sudo apt install -y \
-	libssl-dev \
-	zlib1g-dev \
-	libbz2-dev \
-	libreadline-dev \
-	libsqlite3-dev \
-	libncursesw5-dev \
-	xz-utils \
-	tk-dev \
-	libxml2-dev \
-	libxmlsec1-dev \
-	libffi-dev \
-	liblzma-dev
 
 cd ~
 git clone https://github.com/rvaiya/keyd
