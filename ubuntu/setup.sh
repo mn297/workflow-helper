@@ -40,6 +40,12 @@ echo "Installing uv..."
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 
+
+cd ~/Downloads
+wget https://github.com/sezanzeb/input-remapper/releases/download/2.2.0/input-remapper-2.2.0.deb
+sudo apt install -f ./input-remapper-2.2.0.deb
+
+
 cd ~
 git clone https://github.com/rvaiya/keyd
 cd keyd
