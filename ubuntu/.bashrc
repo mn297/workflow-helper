@@ -23,8 +23,11 @@ lazygit() {
 # alias sros='source /opt/ros/noetic/setup.bash && [ -f devel/setup.bash ] && source devel/setup.bash'
 # alias kros='killall -9 roscore rosmaster rosout roslaunch rosmaster; rosnode cleanup ; rosnode kill -a ; killall -9 gzclient ; killall -9 gzserver ;'
 
+ROS_DISTRO="jazzy"
+# ROS_DISTRO="humble"
+
 # ROS
-alias sros='source /opt/ros/humble/setup.bash && if [ -f "./install/setup.bash" ]; then source ./install/setup.bash; fi'
+alias sros='source /opt/ros/${ROS_DISTRO}/setup.bash && if [ -f "./install/setup.bash" ]; then source ./install/setup.bash; fi'
 # . "$HOME/.local/bin/env"
 senv() {
 	if [ -f .venv/bin/activate ]; then
