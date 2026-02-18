@@ -21,11 +21,14 @@ sudo apt install -y \
 	xbindkeys \
 	xdotool curl
 sudo snap install shfmt
+snap install blender --classic
 
-sudo apt install ddcutil i2c-tools
+
+sudo apt install -y ddcutil i2c-tools
 sudo usermod -aG i2c $USER
 ddcutil detect
 
+sudo apt install -y xscreensaver xscreensaver-gl-extra xscreensaver-data-extra
 
 
 git config --global user.email "mn297@users.noreply.github.com"
@@ -34,6 +37,15 @@ git config --global user.name "mn297"
 # Install browsers via snap
 echo "Installing browsers via snap..."
 sudo snap install chromium opera brave spotify
+
+sudo apt install -y flatpak
+sudo apt install -y gnome-software-plugin-flatpak
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+# Torrent client
+sudo add-apt-repository ppa:qbittorrent-team/qbittorrent-stable
+sudo apt-get update && sudo apt-get install -y qbittorrent
+
 
 # Install uv (Python package manager)
 echo "Installing uv..."
@@ -44,7 +56,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # cd ~/Downloads
 # wget https://github.com/sezanzeb/input-remapper/releases/download/2.2.0/input-remapper-2.2.0.deb
 # sudo apt install -f ./input-remapper-2.2.0.deb
-sudo apt install input-remapper
+sudo apt install -y input-remapper
 
 # Install keyd for capslock to enter
 cd ~
@@ -71,11 +83,11 @@ EOF
 sudo keyd reload
 
 # Install CUDA
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-sudo dpkg -i cuda-keyring_1.1-1_all.deb
-sudo apt-get update
-sudo apt-get -y install cuda-toolkit-13-1
-sudo apt install nvidia-cuda-toolkit
+# wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+# sudo dpkg -i cuda-keyring_1.1-1_all.deb
+# sudo apt-get update
+# sudo apt-get -y install cuda-toolkit-13-1
+# sudo apt install -y nvidia-cuda-toolkit
 
 # Download Isaac Sim
 # check if $HOME/isaacsim exists
