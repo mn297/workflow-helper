@@ -92,6 +92,32 @@ install_ros2() {
     # Documentation tools (Using apt to avoid PEP 668 pip issues on 24.04)
     sudo apt install -y python3-sphinx python3-sphinx-autodoc-typehints python3-sphinx-rtd-theme
 
+    sudo apt update && sudo apt install -y \
+        ros-jazzy-moveit \
+        ros-jazzy-moveit-configs-utils \
+        ros-jazzy-moveit-ros-move-group \
+        ros-jazzy-moveit-ros-visualization \
+        ros-jazzy-moveit-kinematics \
+        ros-jazzy-moveit-planners \
+        ros-jazzy-moveit-simple-controller-manager \
+        ros-jazzy-moveit-setup-assistant \
+        ros-jazzy-controller-manager \
+        ros-jazzy-joint-state-broadcaster \
+        ros-jazzy-joint-state-publisher \
+        ros-jazzy-joint-state-publisher-gui \
+        ros-jazzy-joint-trajectory-controller \
+        ros-jazzy-position-controllers \
+        ros-jazzy-effort-controllers \
+        ros-jazzy-robot-state-publisher \
+        ros-jazzy-ros-gz-sim \
+        ros-jazzy-ros-gz-bridge \
+        ros-jazzy-hardware-interface \
+        ros-jazzy-xacro \
+        ros-jazzy-tf2-ros \
+        ros-jazzy-rviz2 \
+        ros-jazzy-rviz-common \
+        ros-jazzy-rviz-default-plugins
+
     ########################
     # 5. Environment setup hint
     ########################
