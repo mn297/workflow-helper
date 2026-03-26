@@ -1,0 +1,32 @@
+---
+description: Clean code principles — fix root causes, keep it simple, no unnecessary abstraction
+alwaysApply: true
+---
+
+# Clean Code
+
+- **Fix the cause, not the symptom.** If something is broken, trace it to the root and fix it there. Don't patch around it with guards, retries, or special cases downstream.
+
+- **No utility functions for one-call logic.** If a piece of logic is only used in one place, inline it. Extract into a function only when there's actual reuse or the block is so large it hurts readability.
+
+- **No premature abstraction.** Don't generalize code until you have at least two concrete, distinct use cases. Wrong abstractions are harder to fix than duplicated code.
+
+- **Delete dead code.** Don't comment it out "just in case." That's what version control is for.
+
+- **Keep functions short and single-purpose.** If a function does two things, split it. If the name needs "and" in it, split it.
+
+- **Name things for what they mean, not what they are.** `remaining_time` over `rt`. `branch_segments` over `data_list`. No abbreviations unless they're universally understood (`idx`, `cfg`, `ctx`).
+
+- **Fail early and loudly.** Validate inputs at the boundary. Raise clear errors with context instead of silently returning `None` or empty results.
+
+- **Flatten when possible.** Prefer early returns over deeply nested if/else. Prefer comprehensions or simple loops over callback chains.
+
+- **Don't wrap things just to wrap them.** If your wrapper adds no logic beyond calling the inner function, it's not helping. Same goes for classes that are just bags of static methods — use a module.
+
+- **Don't code for imaginary failures.** Handle realistic, known failure modes at the correct boundary. Don't scatter speculative null checks, retries, or fallback branches throughout the codebase.
+
+- **No premature abstraction.** Don't generalize until there are at least two real, distinct use cases. Prefer a little duplication over the wrong abstraction.
+
+- **Do not add copyright in codefile unless stated.** No need to remove from current files neither.
+
+- **Don't comment on what your code does. Comment why it is done in that certain way.**
