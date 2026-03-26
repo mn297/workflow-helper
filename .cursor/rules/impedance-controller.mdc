@@ -1,0 +1,163 @@
+---
+description: Deep runtime-trace checklist for Cartesian impedance control analysis
+globs:
+  - src/impedance_controllers/**/*.{cpp,h,hpp,cc,cxx,ipp}
+  - src/impedance_controllers/**/CMakeLists.txt
+  - src/impedance_controllers/**/*.yaml
+  - src/impedance_controllers/**/*.launch
+  - src/impedance_controllers/**/*.xml
+alwaysApply: false
+---
+Important: do not assume my control law is always active everywhere.
+
+I want you to determine:
+1. where this controller is actually called in the code path
+2. whether it runs every servo/update cycle
+3. under what mode/state/controller-manager selection it is active
+4. whether it is only used in a specific compare/test/demo/contact mode
+5. whether the repo switches between position control, Cartesian impedance, hybrid control, or nullspace/posture control
+
+Please trace the actual call chain, for example:
+main/controller manager -> update() / computeCommand() / write() -> torque command sent to actuators
+
+Do not just pattern-match equations.
+Tell me whether my rule is:
+- the always-active controller law
+- one branch among several modes
+- only a helper computation
+- only used for analysis/simulation
+- not actually used at runtime
+
+I am comparing my own Cartesian impedance controller derivation against this repo. Please do a careful check, not a hand-wavy one.
+
+My version is this.
+
+I want the task-space impedance
+M_m(\ddot r-\ddot r_d) + D_m(\dot r-\dot r_d) + K_m(r-r_d) = F_r
+
+From that I define the commanded task acceleration
+a_cmd = \ddot r_d + M_m^{-1}[D_m(\dot r_d-\dot r) + K_m(r_d-r) + F_r]
+
+Then I use task-space inverse dynamics
+M_r(q)\ddot r + S_r(q,\dot q)\dot r + g_r(q) = J_r^{-T}(q)u + F_r
+
+and choose torque
+u = J_r^T(q)[M_r(q)a_cmd + S_r(q,\dot q)\dot r + g_r(q) - F_r]
+
+Equivalently, if expanded:
+u = J_r^T(q)[
+M_r(q)\ddot r_d
++ M_r(q)M_m^{-1}(D_m(\dot r_d-\dot r) + K_m(r_d-r))
++ S_r(q,\dot q)\dot r
++ g_r(q)
++ (M_r(q)M_m^{-1} - I)F_r
+]
+
+What I think I am doing is:
+1. choose desired impedance
+2. solve it for a_cmd
+3. choose u so that the closed-loop robot satisfies \ddot r = a_cmd
+4. therefore the robot realizes the desired impedance
+
+Please compare the repo implementation against my derivation and answer these exact questions.
+
+A. High-level match
+- Is this repo actually implementing the same controller idea as mine, or a different one?
+- Is it true Cartesian impedance, operational-space impedance, admittance-like outer loop + inverse dynamics, or just PD in Cartesian space?
+- Is it torque control, wrench control, or position control pretending to be impedance?
+
+B. Equation-by-equation mapping
+Map the repo variables/functions to my symbols:
+- r, \dot r, \ddot r
+- r_d, \dot r_d, \ddot r_d
+- M_m, D_m, K_m
+- F_r
+- J, J^T
+- M_r(q), S_r(q,\dot q), g_r(q)
+- a_cmd
+- u
+
+If the repo uses standard operational-space notation, map it explicitly:
+- r <-> x
+- M_r <-> \Lambda
+- S_r\dot r <-> \mu
+- g_r <-> p
+- u <-> \tau
+- F_r <-> F_ext
+
+C. Implementation structure
+Tell me which of these the repo is actually coding:
+1. two-stage implementation
+   a_cmd = ...
+   u = ...
+2. one fully expanded torque equation
+3. no inverse dynamics at all
+4. partial model compensation only
+
+Please quote the exact code blocks/functions where this happens.
+
+D. The critical logic check
+I want you to verify whether the repo really enforces
+\ddot r = a_cmd
+or only approximately does so.
+
+Please be precise:
+- where is the inverse-dynamics cancellation happening
+- are Coriolis/centrifugal and gravity compensated
+- is the controller assuming square nonsingular J
+- is J^{-T} used explicitly, or avoided
+- is there a pseudoinverse / dynamically consistent inverse / nullspace term instead
+
+E. Force sign convention
+This part is very important because it confuses me.
+Please determine from the code which convention is used for F_r:
+- force of environment on robot
+or
+- force of robot on environment
+
+For example, if tool-frame +x points forward and the robot pushes into a wall in +x with 100 N, does the code expect F_r^x = -100 or +100?
+
+Please use the actual sign in the code, not theory only.
+
+F. J^T F part
+Please explain from the repo how they are using:
+- \tau = J^T F
+- and whether there is any place where an equivalent J^{-T}\tau interpretation appears
+
+I want you to say clearly:
+- what is in task space
+- what is in joint space
+- where the mapping happens
+- why transpose is used
+
+G. Practical deviations from my clean derivation
+Point out every important place where real code differs from my ideal derivation, for example:
+- damping injection only
+- no desired acceleration feedforward
+- no force feedback term
+- no M_m shaping
+- diagonal gains only
+- clipped torques
+- low-pass filtered wrench
+- frame transforms for wrench
+- Jacobian transpose approximation only
+- no operational-space inertia
+- singularity handling
+- nullspace posture controller
+- saturation / safety layers
+- discrete-time implementation effects
+
+H. Verdict
+At the end, give me:
+1. “same controller idea” or “different controller idea”
+2. the 3 most important mismatches
+3. whether my derivation is a fair description of this repo
+4. if not, rewrite my derivation so it matches what the repo is actually doing
+
+Important:
+- do not give me generic textbook impedance control
+- ground every claim in the actual code
+- include filenames, function names, and code snippets
+- if something is ambiguous, say it is ambiguous
+- if the repo is using a simplified Jacobian-transpose Cartesian PD controller, say that bluntly
+- if it is operational-space control, say exactly why
