@@ -46,6 +46,21 @@ cros() {
 		rm -rf build install log
 	fi
 }
+kros() {
+	echo "Nuking all ROS/Gazebo/RViz processes..."
+	kill -9 $(pgrep -f "ros2")        2>/dev/null
+	kill -9 $(pgrep -f "gz sim")      2>/dev/null
+	kill -9 $(pgrep -f "gz_ros")      2>/dev/null
+	kill -9 $(pgrep -f "rviz2")       2>/dev/null
+	kill -9 $(pgrep -f "move_group")  2>/dev/null
+	kill -9 $(pgrep -f "controller_manager") 2>/dev/null
+	kill -9 $(pgrep -f "robot_state_publisher") 2>/dev/null
+	kill -9 $(pgrep -f "z1_ctrl")     2>/dev/null
+	kill -9 $(pgrep -f "ruby.*gz")    2>/dev/null
+	# Clean up any leftover ROS2 daemon (stale graph cache)
+	ros2 daemon stop 2>/dev/null
+	echo "Done."
+}
 sros
 
 gsettings set org.gnome.desktop.interface enable-animations false

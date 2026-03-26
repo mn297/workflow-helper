@@ -89,6 +89,11 @@ install_ros2() {
     # If this fails, comment it out and rely on rosdep later.
     sudo apt install -y ros-jazzy-pinocchio || echo "Warning: ros-jazzy-pinocchio not found or failed to install."
 
+    # Misc
+    sudo apt install -y ros-jazzy-moveit-py
+    
+
+
     # Documentation tools (Using apt to avoid PEP 668 pip issues on 24.04)
     sudo apt install -y python3-sphinx python3-sphinx-autodoc-typehints python3-sphinx-rtd-theme
 
