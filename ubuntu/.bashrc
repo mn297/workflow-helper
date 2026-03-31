@@ -47,21 +47,151 @@ cros() {
 	fi
 }
 kros() {
-	echo "Nuking all ROS/Gazebo/RViz processes..."
-	kill -9 $(pgrep -f "ros2")        2>/dev/null
-	kill -9 $(pgrep -f "gz sim")      2>/dev/null
-	kill -9 $(pgrep -f "gz_ros")      2>/dev/null
-	kill -9 $(pgrep -f "rviz2")       2>/dev/null
-	kill -9 $(pgrep -f "move_group")  2>/dev/null
-	kill -9 $(pgrep -f "controller_manager") 2>/dev/null
-	kill -9 $(pgrep -f "robot_state_publisher") 2>/dev/null
-	kill -9 $(pgrep -f "z1_ctrl")     2>/dev/null
-	kill -9 $(pgrep -f "ruby.*gz")    2>/dev/null
+	echo "Nuking ROS 2 / Gazebo / RViz and related processes..."
+	# Only kill when pgrep finds PIDs (empty kill -9 can error / touch wrong targets)
+	_kros_kill() {
+		local p
+		p=$(pgrep -f "$1" 2>/dev/null) || true
+		[ -n "$p" ] && kill -9 $p 2>/dev/null
+	}
+	# CLI + common node names (many never contain the substring "ros2" in argv)
+	for _pat in \
+		'ros2' \
+		'rqt' \
+		'launch_ros' \
+		'component_container' \
+		'component_container_mt' \
+		'composable_node' \
+		'ros2_control_node' \
+		'controller_manager' \
+		'spawner' \
+		'robot_state_publisher' \
+		'joint_state_publisher' \
+		'joint_state_broadcaster' \
+		'static_transform_publisher' \
+		'move_group' \
+		'moveit' \
+		'move_group_.*moveit' \
+		'servo_node' \
+		'rviz2' \
+		'rviz' \
+		'apriltag_node' \
+		'aruco' \
+		'image_proc' \
+		'depth_image_proc' \
+		'image_transport' \
+		'stereo_image_proc' \
+		'pointcloud_to_laserscan' \
+		'realsense2_camera' \
+		'v4l2_camera' \
+		'camera_ros' \
+		'gz sim' \
+		'gz_ros' \
+		'gz_ros2_control' \
+		'ros_gz' \
+		'ros_gz_bridge' \
+		'ros_gz_image' \
+		'ros_gz_sim' \
+		'gzclient' \
+		'gzserver' \
+		'ign gazebo' \
+		'ignition-gazebo' \
+		'ruby.*gz' \
+		'gazebo_ros' \
+		'gazebo_ros2' \
+		'foxglove_bridge' \
+		'rosbridge' \
+		'rosapi' \
+		'ros1_bridge' \
+		'topic_tools' \
+		'zenoh-bridge-ros' \
+		'bt_navigator' \
+		'planner_server' \
+		'controller_server' \
+		'smoother_server' \
+		'behavior_server' \
+		'waypoint_follower' \
+		'lifecycle_manager' \
+		'amcl' \
+		'collision_monitor' \
+		'velocity_smoother' \
+		'docking_server' \
+		'route_server' \
+		'gps_waypoint_follower' \
+		'slam_toolbox' \
+		'cartographer' \
+		'map_server' \
+		'map_saver' \
+		'ekf_node' \
+		'ekf_localization_node' \
+		'navsat_transform' \
+		'robot_localization' \
+		'teleop_twist' \
+		'twist_mux' \
+		'joy_node' \
+		'interactive_markers' \
+		'z1_ctrl' \
+		'webots_ros2' \
+		'ros-args' \
+		; do
+		_kros_kill "$_pat"
+	done
+	# Installed ROS nodes: full path in argv is typical (catches stragglers like apriltag_node)
+	if [ -n "${ROS_DISTRO:-}" ]; then
+		_kros_kill "/opt/ros/${ROS_DISTRO}/lib/"
+	fi
+	# Also sweep workspace install prefixes from typical colcon layouts (colon-separated)
+	if [ -n "${COLCON_PREFIX_PATH:-}" ]; then
+		IFS=: read -r -a _kros_ws <<<"${COLCON_PREFIX_PATH}"
+		for _ws in "${_kros_ws[@]}"; do
+			[ -n "$_ws" ] && _kros_kill "${_ws}/lib/"
+		done
+	fi
 	# Clean up any leftover ROS2 daemon (stale graph cache)
-	ros2 daemon stop 2>/dev/null
+	ros2 daemon stop 2>/dev/null || true
 	echo "Done."
 }
 sros
+
+# KEEP THIS FOR REFERENCE
+# kros() {
+# 	echo "Nuking ROS 2 / Gazebo / RViz related processes..."
+# 	# Only kill when pgrep finds PIDs (empty kill -9 can error / touch wrong targets)
+# 	_kros_kill() {
+# 		local p
+# 		p=$(pgrep -f "$1" 2>/dev/null) || true
+# 		[ -n "$p" ] && kill -9 $p 2>/dev/null
+# 	}
+# 	# CLI + common node names (many never contain the substring "ros2" in argv)
+# 	for _pat in \
+# 		'ros2' \
+# 		'apriltag_node' \
+# 		'component_container' \
+# 		'ros2_control_node' \
+# 		'static_transform_publisher' \
+# 		'joint_state_publisher' \
+# 		'robot_state_publisher' \
+# 		'controller_manager' \
+# 		'move_group' \
+# 		'rviz2' \
+# 		'gz sim' \
+# 		'gz_ros' \
+# 		'ros_gz' \
+# 		'foxglove_bridge' \
+# 		'z1_ctrl' \
+# 		'ruby.*gz' \
+# 		'realsense2_camera' \
+# 		'ros-args' \
+# 		; do
+# 		_kros_kill "$_pat"
+# 	done
+# 	# Installed ROS nodes: full path in argv is typical (catches stragglers like apriltag_node)
+# 	if [ -n "${ROS_DISTRO:-}" ]; then
+# 		_kros_kill "/opt/ros/${ROS_DISTRO}/lib/"
+# 	fi
+# 	ros2 daemon stop 2>/dev/null || true
+# 	echo "Done."
+# }
 
 gsettings set org.gnome.desktop.interface enable-animations false
 
