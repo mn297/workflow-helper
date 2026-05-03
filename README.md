@@ -2,6 +2,44 @@
 
 git config --global alias.lol "log --oneline --graph --decorate --all"
 
+###  Isaac Sim
+```
+sudo tee /etc/sysctl.d/99-inotify.conf <<EOF
+fs.inotify.max_user_watches=524288
+fs.inotify.max_user_instances=1024
+EOF
+sudo sysctl --system
+```
+
+Verify
+```
+sysctl fs.inotify.max_user_watches fs.inotify.max_user_instances
+```
+
+Nuke Isaac Sim
+```
+# The install itself
+rm -rf ~/isaacsim
+
+# User config + cache (these can cause "internal conflicts" between versions, per NVIDIA docs)
+rm -rf ~/.local/share/ov
+rm -rf ~/.cache/ov
+rm -rf ~/.nvidia-omniverse
+rm -rf ~/Documents/Kit  # only if you don't have other Kit-based apps
+```
+
+IsaacLab
+```
+uv pip uninstall --python env_isaaclab/bin/python torch torchvision torchaudio triton
+
+uv pip install --python env_isaaclab/bin/python \
+  torch torchvision torchaudio \
+  --index-url https://download.pytorch.org/whl/cu130
+
+uv pip uninstall --python env_isaaclab/bin/python torch torchvision torchaudio triton
+
+```
+
 ### Ubuntu
 
 Cursor allowlist

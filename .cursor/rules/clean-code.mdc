@@ -30,3 +30,8 @@ alwaysApply: true
 - **Do not add copyright in codefile unless stated.** No need to remove from current files neither.
 
 - **Don't comment on what your code does. Comment why it is done in that certain way.**
+
+# Toolchain
+
+- if no need pixi/conda then use uv
+- Prefer pixi over conda. 
