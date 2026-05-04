@@ -1,22 +1,59 @@
-lazygit() {
-	if [ "$1" = "--amend" ]; then
+gquick() {
+	if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+		echo "Not inside a git repository"
+		return 1
+	fi
+
+	case "$1" in
+	--amend)
+		git add .
+
 		if [ "$2" = "--message" ] || [ "$2" = "-m" ]; then
-			git add .
+			if [ -z "$3" ]; then
+				echo "Usage: gquick --amend -m \"message\""
+				return 1
+			fi
+
 			git commit --amend -m "$3"
 		else
-			git add .
 			git commit --amend
 		fi
-		git push --force
-	elif [ "$1" = "--fixup" ]; then
+
+		git push --force-with-lease
+		;;
+
+	--fixup)
 		git add .
-		git commit --fixup HEAD
+		git commit --fixup=HEAD
 		git push
-	else
+		;;
+
+	-m | --message)
+		if [ -z "$2" ]; then
+			echo "Usage: gquick -m \"message\""
+			return 1
+		fi
+
 		git add .
-		git commit -m "$1"
+		git commit -m "$2"
 		git push
-	fi
+		;;
+
+	"")
+		echo "Usage:"
+		echo "  gquick -m \"message\""
+		echo "  gquick --amend"
+		echo "  gquick --amend -m \"message\""
+		echo "  gquick --fixup"
+		return 1
+		;;
+
+	*)
+		git add .
+		git commit -m "$*"
+		git push
+		;;
+	esac
 }
 
 # alias sros='source /opt/ros/noetic/setup.bash'
