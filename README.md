@@ -237,3 +237,39 @@ sudo systemctl restart systemd-logind
 | No hibernate option in UI | Check polkit rule (step 7), reboot |
 | Slow hibernate | Normal — writing full RAM to disk takes time |
 | Resume drops to login | Working as intended — re-enter password |
+
+
+
+# VS Code Terminal `Ctrl+R` Bash History Fix
+
+`Ctrl+R` is Bash history, not VS Code. By default each terminal only sees its own in-memory history, so commands from other/previous terminals don't show up.
+
+**Fix:** append this to the end of `~/.bashrc` (do not overwrite `PROMPT_COMMAND` with a bare string — that breaks VS Code shell integration):
+
+```bash
+HISTFILE="$HOME/.bash_history"
+HISTSIZE=100000
+HISTFILESIZE=200000
+shopt -s histappend
+
+__sync_bash_history() {
+    builtin history -a
+    builtin history -n
+}
+
+if declare -p PROMPT_COMMAND 2>/dev/null | grep -q 'declare -a'; then
+    PROMPT_COMMAND+=(__sync_bash_history)
+elif [[ -n "${PROMPT_COMMAND:-}" ]]; then
+    PROMPT_COMMAND=("$PROMPT_COMMAND" __sync_bash_history)
+else
+    PROMPT_COMMAND=(__sync_bash_history)
+fi
+```
+
+Open a new terminal (or `source ~/.bashrc`). `declare -p PROMPT_COMMAND` should list both `__vsc_prompt_cmd` and `__sync_bash_history`.
+
+**Verify:** run `echo vscode-history-test` in one terminal; in another, press Enter once, then `Ctrl+R` and type `vscode-history-test`.
+
+**Notes:**
+- `HISTCONTROL=ignoreboth` skips leading-space commands and consecutive duplicates — intentional, not the bug.
+- `history -a` / `-n` write/read the history file; `history -c` then `history -w` wipes the file — avoid that.
