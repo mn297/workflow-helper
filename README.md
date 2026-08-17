@@ -85,7 +85,7 @@ uv pip uninstall --python env_isaaclab/bin/python torch torchvision torchaudio t
 Cursor keybindings (Linux): [`ubuntu/cursor/keybindings.json`](ubuntu/cursor/keybindings.json)
 
 ```
-Ctrl+I      chat panel (toggle visibility)
+Ctrl+I      chat panel (toggle; also works in terminal)
 Ctrl+L      chat (focus / add)
 Ctrl+B      explorer / left sidebar (toggle; also works in terminal)
 Ctrl+Alt+S  agent sidebar (toggle)
@@ -102,7 +102,7 @@ mkdir -p ~/.config/Cursor/User
 cp ~/workflow-helper/ubuntu/cursor/keybindings.json ~/.config/Cursor/User/keybindings.json
 ```
 
-Merge [`ubuntu/cursor/settings.json`](ubuntu/cursor/settings.json) into `~/.config/Cursor/User/settings.json` (`commandsToSkipShell` so the terminal does not eat Ctrl+B). Also set `vim.handleKeys` `"<C-i>"`, `"<C-`>"`, `"<C-b>"` to `false` (see [`vim_vsc.json`](vim_vsc.json)).
+Merge [`ubuntu/cursor/settings.json`](ubuntu/cursor/settings.json) into `~/.config/Cursor/User/settings.json`. `commandsToSkipShell` must include `toggleSidebarVisibility` (Ctrl+B) and `toggleAuxiliaryBar` (Ctrl+I). Without that, the terminal eats both keys. Ctrl+I is ASCII Tab. Also set `vim.handleKeys` `"<C-i>"`, `"<C-`>"`, `"<C-b>"` to `false` (see [`vim_vsc.json`](vim_vsc.json)).
 
 Cursor allowlist
 ```

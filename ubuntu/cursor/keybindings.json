@@ -2,7 +2,8 @@
 //   mkdir -p ~/.config/Cursor/User
 //   cp ~/workflow-helper/ubuntu/cursor/keybindings.json ~/.config/Cursor/User/keybindings.json
 // Merge ubuntu/cursor/settings.json into ~/.config/Cursor/User/settings.json
-//   (commandsToSkipShell so Ctrl+B is not eaten by the terminal).
+//   (commandsToSkipShell so Ctrl+B and Ctrl+I are not eaten by the terminal.
+//    Ctrl+I is ASCII Tab; without skip-shell the terminal inserts a tab).
 // Also set vim.handleKeys "<C-i>": false, "<C-`>": false, "<C-b>": false (see vim_vsc.json).
 // Focus: Ctrl+I toggle chat panel | Ctrl+L focus/add | Ctrl+B explorer | Ctrl+Alt+S agent sidebar | Ctrl+1 editor 1 | Ctrl+2 editor 2 | Ctrl+3 terminal | Ctrl+` toggle terminal
 [
