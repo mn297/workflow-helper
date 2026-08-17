@@ -21,5 +21,6 @@ GetActiveExplorerPath()
 #IfWinActive ahk_exe Explorer.exe
 .::
 path := GetActiveExplorerPath()
-run, "C:\Users\%USERNAME%\AppData\Local\Programs\Microsoft VS Code\bin\code" "%path%"
+EnvGet, LocalAppData, LOCALAPPDATA
+run, "%LocalAppData%\Programs\Microsoft VS Code\bin\code" "%path%"
 return

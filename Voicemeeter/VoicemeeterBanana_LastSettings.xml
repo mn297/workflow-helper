@@ -299,7 +299,7 @@
 	<RecordMode RecBus='0' DontPlay='0' Loop='0' MultiTrack='0' TimerStop='0' />
 	<RecordArm ArmIn1='1' ArmIn2='1' ArmIn3='1' ArmIn4='1' ArmIn5='1' ArmBus1='1' ArmBus2='0' ArmBus3='0' ArmBus4='0' ArmBus5='0' />
 	<RecordLastFileName></RecordLastFileName>
-	<RecordDirectory>C:\Users\%USERNAME%\Documents\Voicemeeter</RecordDirectory>
+	<RecordDirectory>%USERPROFILE%\Documents\Voicemeeter</RecordDirectory>
 	<RecordPrefix></RecordPrefix>
 	<RecordParam FileType='3' BitRes='16' TargetSR='0' nbChannel='2' kbps='192' />
 </VoiceMeeterRecorder>
