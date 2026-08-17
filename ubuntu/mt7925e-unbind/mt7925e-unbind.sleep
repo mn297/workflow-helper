@@ -1,0 +1,7 @@
+#!/bin/sh
+# Unbind mt7925e immediately before kernel suspend; do not rebind on wake.
+case "$1" in
+  pre)
+    /usr/local/sbin/mt7925e-unbind.sh || true
+    ;;
+esac

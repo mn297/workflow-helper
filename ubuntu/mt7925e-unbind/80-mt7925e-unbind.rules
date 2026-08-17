@@ -1,0 +1,2 @@
+# If mt7925e binds, unbind it immediately (S3 resume -110 workaround).
+ACTION=="bind", SUBSYSTEM=="pci", DRIVER=="mt7925e", RUN+="/usr/local/sbin/mt7925e-unbind.sh"
