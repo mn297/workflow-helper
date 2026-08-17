@@ -1,0 +1,52 @@
+ls
+grep
+cat
+find
+cd
+colcon
+diff
+head
+tail
+less
+wc
+file
+tree
+realpath
+dirname
+basename
+stat
+which
+whereis
+locate
+rg
+echo
+printf
+pwd
+env
+printenv
+whoami
+date
+uname
+git status
+git log
+git diff
+git branch
+git show
+git remote
+cmake
+make
+cargo
+npm
+pip
+python
+node
+rustc
+gcc
+ps
+top
+htop
+free
+df
+du
+lsblk
+nvidia-smi

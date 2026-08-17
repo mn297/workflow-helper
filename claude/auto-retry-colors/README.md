@@ -28,6 +28,12 @@ Idempotent. Re-run after:
 
 Then start a **fresh** `claude` (old panes keep the polluted process env).
 
+## Tmux resize (TUI stuck on an old pane width)
+
+Copy [`ubuntu/tmux.conf`](../../ubuntu/tmux.conf) into `~/.tmux.conf`. Then run `tmux source-file ~/.tmux.conf`.
+
+If the layout is still wrong, widen the panel. Then press `Ctrl+L`. Or bypass the wrap with `command claude`.
+
 Optional live scrub without reinstall:
 
 ```bash
