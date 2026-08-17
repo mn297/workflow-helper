@@ -1,0 +1,13 @@
+--- a/src/wrapper.sh
++++ b/src/wrapper.sh
+@@ -8,6 +8,10 @@
+   # Degrade to plain claude if already inside a wrapped session, or if the launcher
+   # is gone (package removed via `npm uninstall -g` without `claude-auto-retry
+   # uninstall` first) — an orphaned wrapper must never break the claude command.
++  # Drop color-killers left by non-TTY hosts (Cursor agent) that started the tmux server.
++  unset NO_COLOR NODE_DISABLE_COLORS CURSOR_AGENT
++  [ "${FORCE_COLOR-}" = "0" ] && unset FORCE_COLOR
++  [ "${TERM-}" = "dumb" ] && unset TERM
+   if [ "${CLAUDE_AUTO_RETRY_ACTIVE}" = "1" ] || [ ! -e "__LAUNCHER_PATH__" ]; then
+     command claude "$@"
+     return $?

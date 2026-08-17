@@ -1,0 +1,89 @@
+--- a/src/launcher.js
++++ b/src/launcher.js
+@@ -38,6 +38,26 @@
+   return "'" + s.replace(/'/g, "'\\''") + "'";
+ }
+ 
++// Env vars that kill Claude Code / TUI colors when a non-interactive host (Cursor
++// agent, CI, etc.) first spawned the tmux server. Those hosts set TERM=dumb /
++// NO_COLOR=1 / FORCE_COLOR=0 globally; tmux then inherits them into every later
++// pane unless we strip them here.
++const COLOR_KILLERS = new Set([
++  'NO_COLOR',
++  'NODE_DISABLE_COLORS',
++  'CURSOR_AGENT',
++]);
++
++// Strip color-suppressing env and never forward a dumb TERM into the TUI.
++// Also drops Cursor-agent markers that leak into tmux global env.
++export function sanitizeInteractiveEnv(env = process.env) {
++  const out = { ...env };
++  for (const k of COLOR_KILLERS) delete out[k];
++  if (out.FORCE_COLOR === '0' || out.FORCE_COLOR === 'false') delete out.FORCE_COLOR;
++  if (out.TERM === 'dumb') delete out.TERM;
++  return out;
++}
++
+ // Env forwarded into the tmux session via `new-session -e`. Windows shells (Git Bash /
+ // MSYS2 / Cygwin) carry names some tmux builds reject as "invalid environment variable
+ // name" — `ProgramFiles(x86)`, the `=C:` drive pseudo-vars, `!ExitCode` — and one bad
+@@ -47,10 +67,16 @@
+ // Modules users. `strict: true` drops the function form too; it is the launch-failure
+ // fallback for tmux builds that reject any exotic name. TMUX* stays excluded so the
+ // inner session doesn't inherit the outer server's identity.
++// TERM is never forwarded: tmux sets the pane TERM from default-terminal; copying the
++// outer TERM (especially TERM=dumb from Cursor agent) clobbers colors.
+ export function buildTmuxEnvArgs(env = process.env, { strict = false } = {}) {
+   const envArgs = [];
+-  for (const [k, v] of Object.entries(env)) {
++  const clean = sanitizeInteractiveEnv(env);
++  for (const [k, v] of Object.entries(clean)) {
+     if (k.startsWith('TMUX')) continue;
++    // Let tmux own pane TERM; never bake the wrapper's recursion guard into the
++    // session env (it would make later `claude` calls in the pane skip the wrapper).
++    if (k === 'TERM' || k === 'CLAUDE_AUTO_RETRY_ACTIVE') continue;
+     if (v == null) continue;
+     if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)
+         && (strict || !/^BASH_FUNC_[A-Za-z_][A-Za-z0-9_]*%%$/.test(k))) continue;
+@@ -68,7 +94,9 @@
+   const escapedLauncher = shellEscape(launcherPath);
+   const escapedArgs = args.map(a => shellEscape(a)).join(' ');
+   const shell = env.SHELL || 'bash';
+-  return `CLAUDE_AUTO_RETRY_ACTIVE=1 node ${escapedLauncher} ${escapedArgs}; exec ${shellEscape(shell)}`;
++  // Unset color killers even if a polluted tmux *global* env re-injected them
++  // (Cursor agent often starts the server with NO_COLOR=1 / TERM=dumb).
++  return `unset NO_COLOR FORCE_COLOR NODE_DISABLE_COLORS CURSOR_AGENT; CLAUDE_AUTO_RETRY_ACTIVE=1 node ${escapedLauncher} ${escapedArgs}; exec ${shellEscape(shell)}`;
+ }
+ 
+ async function launchInteractive(args) {
+@@ -80,7 +108,11 @@
+   const { cmd, cmdArgs } = resolveLaunchCommand(claudeBin, args);
+   const claude = spawn(cmd, cmdArgs, {
+     stdio: 'inherit',
+-    env: { ...process.env, CLAUDE_AUTO_RETRY_ACTIVE: '1', ...(pane ? { CLAUDE_AUTO_RETRY_PANE: pane } : {}) },
++    env: {
++      ...sanitizeInteractiveEnv(process.env),
++      CLAUDE_AUTO_RETRY_ACTIVE: '1',
++      ...(pane ? { CLAUDE_AUTO_RETRY_PANE: pane } : {}),
++    },
+   });
+ 
+   // Check spawn succeeded before using PID
+@@ -268,6 +300,17 @@
+       execFileSync('tmux', buildSetWindowOptionArgs(`${sessionName}:0`, 'mode-keys', 'vi'));
+     } catch { /* old tmux without these options — skip silently */ }
+ 
++    // Scrub color-killing vars off the tmux *global* env. If a Cursor agent (or
++    // other non-TTY host) created this server first, NO_COLOR/TERM=dumb linger
++    // globally and poison every later interactive session.
++    for (const k of ['NO_COLOR', 'FORCE_COLOR', 'NODE_DISABLE_COLORS', 'CURSOR_AGENT']) {
++      try { execFileSync('tmux', ['set-environment', '-gu', k]); } catch { /* ignore */ }
++    }
++    try {
++      const term = execFileSync('tmux', ['show-environment', '-g', 'TERM'], { encoding: 'utf-8' }).trim();
++      if (term === 'TERM=dumb') execFileSync('tmux', ['set-environment', '-gu', 'TERM']);
++    } catch { /* unset or absent — fine */ }
++
+     // Attach to the session
+     const attachResult = spawn('tmux', ['attach-session', '-t', sessionName], {
+       stdio: 'inherit',
