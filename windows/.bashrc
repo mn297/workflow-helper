@@ -34,7 +34,7 @@ fflazy() {
 
 # alias scon='source "$HOME/miniconda3/Scripts/activate"'
 # scon() {
-#     cmd.exe /C "C:\Users\%USERNAME%\miniconda3\Scripts\activate.bat C:\Users\%USERNAME%\miniconda3 && bash"
+#     cmd.exe /C "%USERPROFILE%\miniconda3\Scripts\activate.bat %USERPROFILE%\miniconda3 && bash"
 # }
 
 # scon() {
@@ -117,7 +117,7 @@ getwsl() {
   echo $pwd_clip | clip.exe
 }
 
-alias pio_run='"/c/Users/$USER/.platformio/penv/Scripts/platformio.exe" run --environment teensy40'
+alias pio_run='"$HOME/.platformio/penv/Scripts/platformio.exe" run --environment teensy40'
 
 alias penv='source ./venv/Scripts/activate'
 alias gclon='git clone'
