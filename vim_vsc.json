@@ -19,6 +19,10 @@
         "<C-f>": false,
         "<C-w>": false,
         "<C-p>": false,
+        "<C-n>": false,
+        "<C-`>": false, // let Ctrl+` toggle terminal (don't swallow in vim)
+        "<C-i>": false, // let Ctrl+I toggle chat panel (don't treat as Tab)
+        "<C-b>": false, // let Ctrl+B toggle left sidebar (don't page-up in vim)
         // "<C-c>": false, // Disable Ctrl+C to avoid overriding VSCode copy
     },
     "vim.normalModeKeyBindingsNonRecursive": [

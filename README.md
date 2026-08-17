@@ -76,6 +76,28 @@ uv pip uninstall --python env_isaaclab/bin/python torch torchvision torchaudio t
 
 ### Ubuntu
 
+Cursor keybindings (Linux): [`ubuntu/cursor/keybindings.json`](ubuntu/cursor/keybindings.json)
+
+```
+Ctrl+I      chat panel (toggle visibility)
+Ctrl+L      chat (focus / add)
+Ctrl+B      explorer / left sidebar (toggle; also works in terminal)
+Ctrl+Alt+S  agent sidebar (toggle)
+Ctrl+1      editor 1
+Ctrl+2      editor 2
+Ctrl+3      terminal (focus)
+Ctrl+`      terminal (toggle)
+```
+
+Restore:
+
+```bash
+mkdir -p ~/.config/Cursor/User
+cp ~/workflow-helper/ubuntu/cursor/keybindings.json ~/.config/Cursor/User/keybindings.json
+```
+
+Merge [`ubuntu/cursor/settings.json`](ubuntu/cursor/settings.json) into `~/.config/Cursor/User/settings.json` (`commandsToSkipShell` so the terminal does not eat Ctrl+B). Also set `vim.handleKeys` `"<C-i>"`, `"<C-`>"`, `"<C-b>"` to `false` (see [`vim_vsc.json`](vim_vsc.json)).
+
 Cursor allowlist
 ```
 ls, grep, cat, find, cd, colcon, diff, head, tail, less, wc, file, tree, realpath, dirname, basename, stat, which, whereis, locate, rg, echo, printf, pwd, env, printenv, whoami, date, uname, git status, git log, git diff, git branch, git show, git remote, cmake, make, cargo, npm, pip, python, node, rustc, gcc, ps, top, htop, free, df, du, lsblk, nvidia-smi

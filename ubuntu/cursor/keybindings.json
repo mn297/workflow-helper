@@ -1,0 +1,158 @@
+// Cursor (Linux). Restore:
+//   mkdir -p ~/.config/Cursor/User
+//   cp ~/workflow-helper/ubuntu/cursor/keybindings.json ~/.config/Cursor/User/keybindings.json
+// Merge ubuntu/cursor/settings.json into ~/.config/Cursor/User/settings.json
+//   (commandsToSkipShell so Ctrl+B is not eaten by the terminal).
+// Also set vim.handleKeys "<C-i>": false, "<C-`>": false, "<C-b>": false (see vim_vsc.json).
+// Focus: Ctrl+I toggle chat panel | Ctrl+L focus/add | Ctrl+B explorer | Ctrl+Alt+S agent sidebar | Ctrl+1 editor 1 | Ctrl+2 editor 2 | Ctrl+3 terminal | Ctrl+` toggle terminal
+[
+    // Ctrl+I toggles chat panel visibility. Ctrl+L stays focus/add.
+    {
+        "key": "ctrl+i",
+        "command": "-composerMode.agent"
+    },
+    {
+        "key": "ctrl+i",
+        "command": "-workbench.action.toggleUnifiedSidebarFromKeyboard"
+    },
+    {
+        "key": "ctrl+i",
+        "command": "workbench.action.toggleAuxiliaryBar",
+        "when": "true"
+    },
+    // Ctrl+B toggles left sidebar (explorer) from ANY focus
+    {
+        "key": "ctrl+b",
+        "command": "-workbench.action.toggleSidebarVisibility"
+    },
+    {
+        "key": "ctrl+b",
+        "command": "-workbench.action.toggleUnifiedSidebarFromKeyboard"
+    },
+    {
+        "key": "ctrl+b",
+        "command": "-extension.vim_ctrl+b"
+    },
+    {
+        "key": "ctrl+b",
+        "command": "workbench.action.toggleSidebarVisibility",
+        "when": "true"
+    },
+    {
+        "key": "ctrl+alt+a",
+        "command": "editor.debug.action.selectionToWatch"
+    },
+    {
+        "key": "ctrl+alt+s",
+        "command": "workbench.action.toggleUnifiedSidebarFromKeyboard",
+        "when": "!isAuxiliaryWindowFocusedContext"
+    },
+    {
+        "key": "ctrl+shift+q",
+        "command": "workbench.files.action.collapseExplorerFolders"
+    },
+    {
+        "key": "ctrl+alt+backspace",
+        "command": "workbench.action.terminal.kill"
+    },
+    {
+        "key": "ctrl+alt+l",
+        "command": "composer.addfilestocomposer"
+    },
+
+    // --- Editor groups 1 / 2 (left / right) ---
+    // Unbind Cursor Glass chat jumpers that steal Ctrl+1 / Ctrl+2
+    {
+        "key": "ctrl+1",
+        "command": "-glass.goToChat1"
+    },
+    {
+        "key": "ctrl+2",
+        "command": "-glass.goToChat2"
+    },
+    {
+        "key": "ctrl+1",
+        "command": "-glass.goToTab1"
+    },
+    {
+        "key": "ctrl+2",
+        "command": "-glass.goToTab2"
+    },
+    {
+        "key": "ctrl+1",
+        "command": "-workbench.action.openEditorAtIndex1"
+    },
+    {
+        "key": "ctrl+2",
+        "command": "-workbench.action.openEditorAtIndex2"
+    },
+    {
+        "key": "alt+1",
+        "command": "-workbench.action.openEditorAtIndex1"
+    },
+    {
+        "key": "ctrl+1",
+        "command": "workbench.action.focusFirstEditorGroup"
+    },
+    {
+        "key": "ctrl+2",
+        "command": "workbench.action.focusSecondEditorGroup"
+    },
+    {
+        "key": "ctrl+m ctrl+left",
+        "command": "-workbench.action.focusLeftGroup"
+    },
+    {
+        "key": "ctrl+m ctrl+right",
+        "command": "-workbench.action.focusRightGroup"
+    },
+
+    // --- Terminal ---
+    // Ctrl+3 focuses terminal; Ctrl+` toggles panel from ANY focus
+    {
+        "key": "ctrl+3",
+        "command": "-glass.goToChat3"
+    },
+    {
+        "key": "ctrl+3",
+        "command": "-workbench.action.focusThirdEditorGroup"
+    },
+    {
+        "key": "ctrl+3",
+        "command": "workbench.action.terminal.focus"
+    },
+    // Clear default Ctrl+` bindings
+    {
+        "key": "ctrl+`",
+        "command": "-glass.toggleTerminal"
+    },
+    {
+        "key": "ctrl+`",
+        "command": "-workbench.action.terminal.toggleTerminal"
+    },
+    // Same open command as Ctrl+3 (works from Cursor chat)
+    {
+        "key": "ctrl+`",
+        "command": "workbench.action.terminal.focus"
+    },
+    // Hide when the bottom panel is actually visible (don't use terminalIsOpen alone —
+    // that key can stay true in chat and blocked opening)
+    {
+        "key": "ctrl+`",
+        "command": "workbench.action.closePanel",
+        "when": "panelVisible && !terminalFocus"
+    },
+    {
+        "key": "ctrl+`",
+        "command": "workbench.action.closePanel",
+        "when": "terminalFocus"
+    },
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "\u001b\r"
+        },
+        "when": "terminalFocus"
+    }
+]
