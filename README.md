@@ -108,6 +108,15 @@ https://forums.developer.nvidia.com/t/590-48-01-no-display-after-wake-from-suspe
 
 You can sometimes recover the display by pressing Ctrl+Alt+F1 then Ctrl+Alt+F7 this forces the display to reinitialize without rebooting.
 
+mt7925e S3 resume timeout (`pci_pm_resume returns -110`)
+The Wi-Fi 7 card (`14c3:7925`, driver `mt7925e`) fails to resume from S3. Unbind it. Leave MT7922 (`14c3:0616`, driver `mt7921e`) bound.
+
+```bash
+~/workflow-helper/ubuntu/setup_mt7925e_unbind.sh
+```
+
+Check: `lspci -nnk -d 14c3:7925` must show no "Kernel driver in use". `lspci -nnk -d 14c3:0616` must still show `mt7921e`.
+
 
 ```
 sudo systemctl enable nvidia-suspend.service
@@ -289,6 +298,7 @@ sudo systemctl restart systemd-logind
 | Problem | Fix |
 |---|---|
 | Black screen after resume | Ensure nvidia services are enabled (step 5) |
+| Suspend/wake hang, `mt7925e ... pci_pm_resume returns -110` | Run `ubuntu/setup_mt7925e_unbind.sh`. Do not unbind MT7922. |
 | Hibernate fails silently | Check swap size ≥ RAM, verify resume= param |
 | No hibernate option in UI | Check polkit rule (step 7), reboot |
 | Slow hibernate | Normal — writing full RAM to disk takes time |

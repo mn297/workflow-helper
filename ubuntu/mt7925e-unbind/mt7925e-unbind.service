@@ -1,0 +1,12 @@
+[Unit]
+Description=Unbind mt7925e to avoid S3 resume timeout
+After=systemd-udev-settle.service
+Before=sleep.target systemd-suspend.service systemd-hibernate.service systemd-hybrid-sleep.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/mt7925e-unbind.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target sleep.target
