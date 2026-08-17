@@ -2,6 +2,19 @@
 
 git config --global alias.lol "log --oneline --graph --decorate --all"
 
+### Claude / Cursor
+
+Agent skill — docstring summary lines (`writing-docstring-summaries`, was
+`verb-analog-cadence`):
+
+```bash
+mkdir -p ~/.agents/skills ~/.cursor/skills ~/.claude/skills
+SKILL=~/workflow-helper/skills/writing-docstring-summaries
+ln -sfn "$SKILL" ~/.agents/skills/writing-docstring-summaries
+ln -sfn "$SKILL" ~/.cursor/skills/writing-docstring-summaries
+ln -sfn "$SKILL" ~/.claude/skills/writing-docstring-summaries
+```
+
 ###  Isaac Sim
 ```
 sudo tee /etc/sysctl.d/99-inotify.conf <<EOF
