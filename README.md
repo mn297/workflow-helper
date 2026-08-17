@@ -15,6 +15,27 @@ ln -sfn "$SKILL" ~/.cursor/skills/writing-docstring-summaries
 ln -sfn "$SKILL" ~/.claude/skills/writing-docstring-summaries
 ```
 
+`claude-auto-retry` loses TUI colors when a Cursor agent starts the tmux server
+(`TERM=dumb` / `NO_COLOR=1`). Portable fix:
+
+```bash
+~/workflow-helper/claude/auto-retry-colors/apply.sh
+```
+
+See [`claude/auto-retry-colors/README.md`](claude/auto-retry-colors/README.md).
+
+`claude-auto-retry` wraps Claude in tmux; resizing a Cursor terminal often
+mangles the TUI (layout sticks to an old/narrow pane width). Add to
+`~/.tmux.conf`:
+
+```tmux
+setw -g aggressive-resize on
+setw -g window-size latest
+```
+
+Reload live sessions: `tmux source-file ~/.tmux.conf`. If still mangled, widen
+the panel and `Ctrl+L`, or bypass the wrap with `command claude`.
+
 ###  Isaac Sim
 ```
 sudo tee /etc/sysctl.d/99-inotify.conf <<EOF
