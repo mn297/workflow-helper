@@ -4,15 +4,21 @@ git config --global alias.lol "log --oneline --graph --decorate --all"
 
 ### Claude / Cursor
 
-Agent skill — docstring summary lines (`writing-docstring-summaries`, was
-`verb-analog-cadence`):
+Agent skills — docstring summary lines (was `verb-analog-cadence`). Two
+variants, same subject:
+
+| Skill | Use for |
+|---|---|
+| `writing-docstring-summaries` | writing a summary line; shape table by artifact kind |
+| `writing-docstring-summaries-strict` | auditing or rewriting existing ones; edit gate first, truth rule, evidence tags |
 
 ```bash
 mkdir -p ~/.agents/skills ~/.cursor/skills ~/.claude/skills
-SKILL=~/workflow-helper/skills/writing-docstring-summaries
-ln -sfn "$SKILL" ~/.agents/skills/writing-docstring-summaries
-ln -sfn "$SKILL" ~/.cursor/skills/writing-docstring-summaries
-ln -sfn "$SKILL" ~/.claude/skills/writing-docstring-summaries
+for s in writing-docstring-summaries writing-docstring-summaries-strict; do
+  for d in ~/.agents/skills ~/.cursor/skills ~/.claude/skills; do
+    ln -sfn ~/workflow-helper/skills/"$s" "$d/$s"
+  done
+done
 ```
 
 `claude-auto-retry` loses TUI colors when a Cursor agent starts the tmux server
