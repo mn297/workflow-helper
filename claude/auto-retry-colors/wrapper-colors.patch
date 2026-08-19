@@ -1,5 +1,5 @@
---- a/src/wrapper.sh
-+++ b/src/wrapper.sh
+--- a/src/wrapper.sh	2026-08-19 10:35:11.587963588 -0400
++++ b/src/wrapper.sh	2026-08-19 10:35:56.295653386 -0400
 @@ -8,6 +8,10 @@
    # Degrade to plain claude if already inside a wrapped session, or if the launcher
    # is gone (package removed via `npm uninstall -g` without `claude-auto-retry

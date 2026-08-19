@@ -1,89 +1,109 @@
---- a/src/launcher.js
-+++ b/src/launcher.js
-@@ -38,6 +38,26 @@
+--- a/src/launcher.js	2026-08-19 10:35:11.587935519 -0400
++++ b/src/launcher.js	2026-08-19 10:35:50.139135952 -0400
+@@ -41,6 +41,29 @@
    return "'" + s.replace(/'/g, "'\\''") + "'";
  }
  
-+// Env vars that kill Claude Code / TUI colors when a non-interactive host (Cursor
-+// agent, CI, etc.) first spawned the tmux server. Those hosts set TERM=dumb /
-+// NO_COLOR=1 / FORCE_COLOR=0 globally; tmux then inherits them into every later
-+// pane unless we strip them here.
-+const COLOR_KILLERS = new Set([
-+  'NO_COLOR',
-+  'NODE_DISABLE_COLORS',
-+  'CURSOR_AGENT',
-+]);
++// --- Color-killer sanitization (local patch; workflow-helper/claude/auto-retry-colors) ---
++// Cursor's agent shell exports TERM=dumb, NO_COLOR=1, FORCE_COLOR=0. Any of these
++// reaching the pane renders the Claude Code TUI colorless (TERM=dumb breaks it
++// outright). TERM must never cross into a pane at all — the pane's tmux-set TERM
++// is the only correct value there.
++const COLOR_KILLERS = ['NO_COLOR', 'NODE_DISABLE_COLORS', 'CURSOR_AGENT'];
 +
-+// Strip color-suppressing env and never forward a dumb TERM into the TUI.
-+// Also drops Cursor-agent markers that leak into tmux global env.
-+export function sanitizeInteractiveEnv(env = process.env) {
-+  const out = { ...env };
-+  for (const k of COLOR_KILLERS) delete out[k];
-+  if (out.FORCE_COLOR === '0' || out.FORCE_COLOR === 'false') delete out.FORCE_COLOR;
-+  if (out.TERM === 'dumb') delete out.TERM;
++function isColorKiller(k, v) {
++  if (COLOR_KILLERS.includes(k)) return true;
++  if (k === 'FORCE_COLOR' && v === '0') return true;
++  if (k === 'TERM' && v === 'dumb') return true;
++  return false;
++}
++
++export function sanitizeInteractiveEnv(env) {
++  const out = {};
++  for (const [k, v] of Object.entries(env)) {
++    if (v == null || isColorKiller(k, v)) continue;
++    out[k] = v;
++  }
 +  return out;
 +}
 +
- // Env forwarded into the tmux session via `new-session -e`. Windows shells (Git Bash /
- // MSYS2 / Cygwin) carry names some tmux builds reject as "invalid environment variable
- // name" — `ProgramFiles(x86)`, the `=C:` drive pseudo-vars, `!ExitCode` — and one bad
-@@ -47,10 +67,16 @@
- // Modules users. `strict: true` drops the function form too; it is the launch-failure
- // fallback for tmux builds that reject any exotic name. TMUX* stays excluded so the
- // inner session doesn't inherit the outer server's identity.
-+// TERM is never forwarded: tmux sets the pane TERM from default-terminal; copying the
-+// outer TERM (especially TERM=dumb from Cursor agent) clobbers colors.
- export function buildTmuxEnvArgs(env = process.env, { strict = false } = {}) {
-   const envArgs = [];
--  for (const [k, v] of Object.entries(env)) {
-+  const clean = sanitizeInteractiveEnv(env);
-+  for (const [k, v] of Object.entries(clean)) {
-     if (k.startsWith('TMUX')) continue;
-+    // Let tmux own pane TERM; never bake the wrapper's recursion guard into the
-+    // session env (it would make later `claude` calls in the pane skip the wrapper).
-+    if (k === 'TERM' || k === 'CLAUDE_AUTO_RETRY_ACTIVE') continue;
+ // --- Env snapshot file (#68) ---
+ // The environment must cross into the tmux pane WITHOUT riding any argv. The previous
+ // `new-session -e KEY=VALUE` forwarding put every exported secret into the argv of the
+@@ -63,6 +86,8 @@
      if (v == null) continue;
-     if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)
-         && (strict || !/^BASH_FUNC_[A-Za-z_][A-Za-z0-9_]*%%$/.test(k))) continue;
-@@ -68,7 +94,9 @@
-   const escapedLauncher = shellEscape(launcherPath);
-   const escapedArgs = args.map(a => shellEscape(a)).join(' ');
-   const shell = env.SHELL || 'bash';
--  return `CLAUDE_AUTO_RETRY_ACTIVE=1 node ${escapedLauncher} ${escapedArgs}; exec ${shellEscape(shell)}`;
-+  // Unset color killers even if a polluted tmux *global* env re-injected them
-+  // (Cursor agent often starts the server with NO_COLOR=1 / TERM=dumb).
-+  return `unset NO_COLOR FORCE_COLOR NODE_DISABLE_COLORS CURSOR_AGENT; CLAUDE_AUTO_RETRY_ACTIVE=1 node ${escapedLauncher} ${escapedArgs}; exec ${shellEscape(shell)}`;
+     if (k.startsWith('TMUX')) continue;
+     if (k === 'CLAUDE_AUTO_RETRY_ENV_FILE') continue;
++    if (k === 'TERM') continue;              // pane keeps tmux's own TERM
++    if (isColorKiller(k, v)) continue;
+     snap[k] = v;
+   }
+   const path = join(dir, `env-${process.pid}-${randomBytes(6).toString('hex')}.json`);
+@@ -88,6 +113,8 @@
+   for (const [k, v] of Object.entries(snap)) {
+     if (k.startsWith('TMUX')) continue;              // pane identity belongs to the inner session
+     if (k === 'CLAUDE_AUTO_RETRY_ENV_FILE') continue;
++    if (k === 'TERM') continue;                      // same guard for snapshots from older writers
++    if (isColorKiller(k, v)) continue;
+     target[k] = v;
+   }
  }
- 
- async function launchInteractive(args) {
-@@ -80,7 +108,11 @@
+@@ -154,7 +181,7 @@
    const { cmd, cmdArgs } = resolveLaunchCommand(claudeBin, args);
    const claude = spawn(cmd, cmdArgs, {
      stdio: 'inherit',
 -    env: { ...process.env, CLAUDE_AUTO_RETRY_ACTIVE: '1', ...(pane ? { CLAUDE_AUTO_RETRY_PANE: pane } : {}) },
-+    env: {
-+      ...sanitizeInteractiveEnv(process.env),
-+      CLAUDE_AUTO_RETRY_ACTIVE: '1',
-+      ...(pane ? { CLAUDE_AUTO_RETRY_PANE: pane } : {}),
-+    },
++    env: { ...sanitizeInteractiveEnv(process.env), CLAUDE_AUTO_RETRY_ACTIVE: '1', ...(pane ? { CLAUDE_AUTO_RETRY_PANE: pane } : {}) },
    });
  
    // Check spawn succeeded before using PID
-@@ -268,6 +300,17 @@
-       execFileSync('tmux', buildSetWindowOptionArgs(`${sessionName}:0`, 'mode-keys', 'vi'));
-     } catch { /* old tmux without these options — skip silently */ }
+@@ -293,8 +320,15 @@
+ // inherits the full launching env the normal Unix way (execFileSync passes process.env),
+ // so the pane's fallback shell keeps working; a pre-existing server's stale env only
+ // ever reaches that fallback shell, never claude itself.
+-export function buildNewSessionArgs(sessionName, innerCmd) {
+-  return ['new-session', '-d', '-s', sessionName, innerCmd];
++// Size the detached session to the launching terminal (-x/-y). Without it the
++// session is born 80x24, claude renders its first frame there, and the attach a
++// moment later delivers a SIGWINCH mid-first-paint — the classic stale-width /
++// artifact render. With the real size there is no resize at attach at all.
++export function buildNewSessionArgs(sessionName, innerCmd, size = null) {
++  const sizeArgs = size && size.cols > 0 && size.rows > 0
++    ? ['-x', String(size.cols), '-y', String(size.rows)]
++    : [];
++  return ['new-session', '-d', ...sizeArgs, '-s', sessionName, innerCmd];
+ }
  
-+    // Scrub color-killing vars off the tmux *global* env. If a Cursor agent (or
-+    // other non-TTY host) created this server first, NO_COLOR/TERM=dumb linger
-+    // globally and poison every later interactive session.
-+    for (const k of ['NO_COLOR', 'FORCE_COLOR', 'NODE_DISABLE_COLORS', 'CURSOR_AGENT']) {
-+      try { execFileSync('tmux', ['set-environment', '-gu', k]); } catch { /* ignore */ }
-+    }
-+    try {
-+      const term = execFileSync('tmux', ['show-environment', '-g', 'TERM'], { encoding: 'utf-8' }).trim();
-+      if (term === 'TERM=dumb') execFileSync('tmux', ['set-environment', '-gu', 'TERM']);
-+    } catch { /* unset or absent — fine */ }
+ // Session reaping (#69) means the tmux server now exits when the last claude session
+@@ -331,13 +365,30 @@
+   const envFile = writeEnvSnapshotSafe(process.env);
+ 
+   const innerCmd = buildTmuxInnerCmd(launcherPath, args, process.env, envFile);
++  const size = process.stdout.columns && process.stdout.rows
++    ? { cols: process.stdout.columns, rows: process.stdout.rows }
++    : null;
+ 
+   try {
+     // stderr: 'pipe' (not the default parent mirror) so a retried transient attempt
+     // doesn't print "server exited unexpectedly" on a launch that then succeeds; on
+     // real failure Node folds the captured stderr into err.message, printed below.
+     await retryTransientServerError(() =>
+-      execFileSync('tmux', buildNewSessionArgs(sessionName, innerCmd), { stdio: ['pipe', 'pipe', 'pipe'] }));
++      execFileSync('tmux', buildNewSessionArgs(sessionName, innerCmd, size), { stdio: ['pipe', 'pipe', 'pipe'] }));
 +
-     // Attach to the session
-     const attachResult = spawn('tmux', ['attach-session', '-t', sessionName], {
-       stdio: 'inherit',
++    // Scrub color-killers off the tmux GLOBAL env: a server first started by a
++    // polluted host hands them to every later fallback shell and new window.
++    // The pane's claude is already safe (snapshot is sanitized); this is for
++    // everything else the server spawns. Best-effort.
++    try {
++      for (const k of COLOR_KILLERS) {
++        execFileSync('tmux', ['set-environment', '-g', '-u', k], { stdio: 'ignore' });
++      }
++      const fc = execFileSync('tmux', ['show-environment', '-g', 'FORCE_COLOR'], { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
++      if (fc === 'FORCE_COLOR=0') {
++        execFileSync('tmux', ['set-environment', '-g', '-u', 'FORCE_COLOR'], { stdio: 'ignore' });
++      }
++    } catch { /* var absent or old tmux — nothing to scrub */ }
+ 
+     // Best-effort: enable mouse mode (scroll, copy-mode, pane/window click) and
+     // vi-style copy-mode keys on the session's first window. Requires tmux >= 2.1;

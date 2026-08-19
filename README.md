@@ -18,8 +18,8 @@ That command links `writing-docstring-summaries` and `writing-docstring-summarie
 
 | Topic | File |
 |---|---|
-| `claude-auto-retry` colors and tmux TUI | [`claude/auto-retry-colors/README.md`](claude/auto-retry-colors/README.md) |
-| tmux pane resize | [`ubuntu/tmux.conf`](ubuntu/tmux.conf) |
+| `claude-auto-retry`: install, color patches, mirror via `tmux attach` | [`claude/auto-retry-colors/README.md`](claude/auto-retry-colors/README.md) |
+| tmux config: resize repaint, mouse copy to clipboard | [`ubuntu/tmux.conf`](ubuntu/tmux.conf) |
 | Cursor keys, restore, allowlist | [`ubuntu/cursor/`](ubuntu/cursor/) |
 
 ## Isaac Sim
