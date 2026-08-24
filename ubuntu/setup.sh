@@ -21,7 +21,7 @@ sudo apt install -y \
 	xbindkeys \
 	xdotool curl
 sudo snap install shfmt
-snap install blender --classic
+sudo snap install blender --classic
 
 
 sudo apt install -y ddcutil i2c-tools
@@ -40,7 +40,7 @@ sudo apt install -y gnome-software-plugin-flatpak
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 # Torrent client
-sudo add-apt-repository ppa:qbittorrent-team/qbittorrent-stable
+sudo add-apt-repository -y ppa:qbittorrent-team/qbittorrent-stable
 sudo apt-get update && sudo apt-get install -y qbittorrent
 
 
@@ -52,16 +52,32 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 echo "Installing pixi..."
 curl -fsSL https://pixi.sh/install.sh | bash
 
+# Install Claude Code
+echo "Installing Claude Code..."
+curl -fsSL https://claude.ai/install.sh | bash
+
 # Install input-remapper
 # cd ~/Downloads
 # wget https://github.com/sezanzeb/input-remapper/releases/download/2.2.0/input-remapper-2.2.0.deb
 # sudo apt install -f ./input-remapper-2.2.0.deb
 sudo apt install -y input-remapper
 
+# Install OpenLogi (Logitech Options+ alternative)
+echo "Installing OpenLogi..."
+OPENLOGI_ARCH="$(dpkg --print-architecture)"
+OPENLOGI_DEB_URL="$(curl -fsSL https://api.github.com/repos/AprilNEA/OpenLogi/releases/latest \
+	| python3 -c "import json,sys; arch=sys.argv[1]; assets=json.load(sys.stdin)['assets']; print(next(a['browser_download_url'] for a in assets if a['name'].endswith(f'-linux-{arch}.deb')))" "$OPENLOGI_ARCH")"
+OPENLOGI_DEB="/tmp/$(basename "$OPENLOGI_DEB_URL")"
+curl -fL "$OPENLOGI_DEB_URL" -o "$OPENLOGI_DEB"
+sudo apt install -y "$OPENLOGI_DEB"
+rm -f "$OPENLOGI_DEB"
+systemctl --user enable --now openlogi-agent.service
+
 # Install keyd for capslock to enter
-cd ~
-git clone https://github.com/rvaiya/keyd
-cd keyd
+if [ ! -d "$HOME/keyd/.git" ]; then
+	git clone https://github.com/rvaiya/keyd "$HOME/keyd"
+fi
+cd "$HOME/keyd"
 make && sudo make install
 sudo systemctl enable --now keyd
 
