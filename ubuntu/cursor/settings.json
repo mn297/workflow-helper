@@ -1,6 +1,8 @@
 {
     "terminal.integrated.commandsToSkipShell": [
         "workbench.action.toggleSidebarVisibility",
-        "workbench.action.toggleAuxiliaryBar"
+        "workbench.action.toggleAuxiliaryBar",
+        "workbench.action.terminal.focus",
+        "workbench.action.closePanel"
     ]
 }
