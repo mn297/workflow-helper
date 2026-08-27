@@ -28,6 +28,15 @@ See [`ubuntu/isaacsim.md`](ubuntu/isaacsim.md). Sysctl file: [`ubuntu/99-inotify
 
 ## Ubuntu
 
+Fresh machine, one command — installs git, clones this repo to `~/workflow-helper`, then runs
+[`ubuntu/setup.sh`](ubuntu/setup.sh) from the clone:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mn297/workflow-helper/main/ubuntu/setup.sh | bash
+```
+
+Steps are best-effort: a failed install does not stop the run, and every failure is listed at the end.
+
 | Topic | File |
 |---|---|
 | Power, wake, hibernate | [`ubuntu/power.md`](ubuntu/power.md) |
