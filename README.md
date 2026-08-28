@@ -26,6 +26,14 @@ That command links `writing-docstring-summaries` and `writing-docstring-summarie
 
 See [`ubuntu/isaacsim.md`](ubuntu/isaacsim.md). Sysctl file: [`ubuntu/99-inotify.conf`](ubuntu/99-inotify.conf).
 
+Building 6.x from source on Ubuntu 24.04:
+
+| Topic | File |
+|---|---|
+| Repo-local GCC 11 + git-lfs (no system change) | [`ubuntu/isaacsim_toolchain.sh`](ubuntu/isaacsim_toolchain.sh) |
+| NVIDIA 580 driver (RTX needs >= 550.90.07) | [`ubuntu/isaacsim_nvidia_driver.sh`](ubuntu/isaacsim_nvidia_driver.sh) |
+| Headless physics smoke test | [`ubuntu/isaacsim_smoke.py`](ubuntu/isaacsim_smoke.py) |
+
 ## Ubuntu
 
 Fresh machine, one command — installs git, clones this repo to `~/workflow-helper`, then runs
