@@ -57,7 +57,7 @@ Partial reruns from the clone:
 [`ubuntu/setup.sh`](ubuntu/setup.sh) maps MX Master side buttons (8/9) to hold-to-scroll via input-remapper. Default `SPEED` is `120` (~60 notches/sec). Higher is faster.
 
 ```bash
-SPEED=30 ./ubuntu/setup.sh scroll
+SPEED=80 ./ubuntu/setup.sh scroll
 ```
 
 | Feel | `SPEED` |
@@ -67,6 +67,16 @@ SPEED=30 ./ubuntu/setup.sh scroll
 | Fast | `180`–`240` |
 
 Mouse must be plugged in. Override the device name with `DEVICE="Logitech MX Master 3S"` if needed.
+
+Nothing else may hold an exclusive grab on the mouse. HID++ daemons (OpenLogi,
+Solaar rules, logiops) grab the same device and whoever starts first wins, so
+installing one silently kills the scroll mapping — the buttons keep working as
+back/forward, but the hold-to-scroll never fires. Diagnose with:
+
+```bash
+journalctl -u input-remapper-daemon -n 40 | grep -i grab   # "Device or resource busy" = conflict
+systemctl --user mask --now openlogi-agent.service         # then rerun ./ubuntu/setup.sh scroll
+```
 
 ```bash
 input-remapper-control --command stop-all     # disable

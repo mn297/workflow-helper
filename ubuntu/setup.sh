@@ -158,17 +158,6 @@ if run_section apps; then
 	sudo add-apt-repository -y ppa:qbittorrent-team/qbittorrent-stable
 	sudo apt-get update && sudo apt-get install -y qbittorrent
 
-	# Install OpenLogi (Logitech Options+ alternative)
-	say "Installing OpenLogi"
-	OPENLOGI_ARCH="$(dpkg --print-architecture)"
-	OPENLOGI_DEB_URL="$(curl -fsSL https://api.github.com/repos/AprilNEA/OpenLogi/releases/latest |
-		python3 -c "import json,sys; arch=sys.argv[1]; assets=json.load(sys.stdin)['assets']; print(next(a['browser_download_url'] for a in assets if a['name'].endswith(f'-linux-{arch}.deb')))" "$OPENLOGI_ARCH")"
-	OPENLOGI_DEB="/tmp/$(basename "$OPENLOGI_DEB_URL")"
-	curl -fL "$OPENLOGI_DEB_URL" -o "$OPENLOGI_DEB"
-	sudo apt install -y "$OPENLOGI_DEB"
-	rm -f "$OPENLOGI_DEB"
-	systemctl --user enable --now openlogi-agent.service
-
 	# keyd, for capslock -> enter
 	say "Installing keyd"
 	if [ ! -d "$HOME/keyd/.git" ]; then
@@ -231,6 +220,16 @@ fi
 #
 # The wheel() macro loops while the button is held and emits both REL_WHEEL and
 # REL_WHEEL_HI_RES, so smooth-scrolling apps (GTK, Firefox, Chrome) behave.
+#
+# input-remapper needs an EXCLUSIVE evdev grab on the mouse, so nothing else may
+# hold one. HID++ daemons (OpenLogi, Solaar's rule engine, logiops) grab the same
+# device, and whoever starts first wins: OpenLogi's user service runs on
+# graphical-session.target, ahead of the XDG autostart that calls autoload, so it
+# won the race every login and the daemon logged
+#   "Cannot grab /dev/input/event22 ... Device or resource busy".
+# The buttons still worked as back/forward (OpenLogi re-emitted them through its
+# own virtual mouse), but the hold-to-scroll macro never fired. Do not install one
+# of those alongside this.
 if run_section scroll; then
 
 	DEVICE="${DEVICE:-Logitech MX Master 3S}"
@@ -338,6 +337,11 @@ GUI          : input-remapper-gtk
 If the wrong buttons respond, find your real codes with
   sudo evtest        # pick the mouse, press the thumb buttons
 and rerun with e.g.  UP_CODE=278 DOWN_CODE=277 ./setup.sh scroll
+
+If nothing responds, check for another process grabbing the mouse:
+  journalctl -u input-remapper-daemon -n 40 | grep -i grab
+A "Device or resource busy" there means a HID++ daemon (OpenLogi, Solaar,
+logiops) took the device first. Stop and mask it, then rerun this section.
 EOF
 
 fi
