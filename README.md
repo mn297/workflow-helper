@@ -45,6 +45,35 @@ curl -fsSL https://raw.githubusercontent.com/mn297/workflow-helper/main/ubuntu/s
 
 Steps are best-effort: a failed install does not stop the run, and every failure is listed at the end.
 
+Partial reruns from the clone:
+
+```bash
+./ubuntu/setup.sh apps      # installs only
+./ubuntu/setup.sh scroll    # MX Master thumb-button scroll only
+```
+
+### Thumb-button scroll speed
+
+[`ubuntu/setup.sh`](ubuntu/setup.sh) maps MX Master side buttons (8/9) to hold-to-scroll via input-remapper. Default `SPEED` is `120` (~60 notches/sec). Higher is faster.
+
+```bash
+SPEED=30 ./ubuntu/setup.sh scroll
+```
+
+| Feel | `SPEED` |
+|---|---|
+| Slow | `20`–`40` |
+| Default | `120` |
+| Fast | `180`–`240` |
+
+Mouse must be plugged in. Override the device name with `DEVICE="Logitech MX Master 3S"` if needed.
+
+```bash
+input-remapper-control --command stop-all     # disable
+input-remapper-control --command autoload     # re-enable
+input-remapper-gtk                            # GUI
+```
+
 | Topic | File |
 |---|---|
 | Power, wake, hibernate | [`ubuntu/power.md`](ubuntu/power.md) |
