@@ -8,13 +8,18 @@ This repo holds scripts, config files, and notes for this machine.
 git config --global alias.lol "log --oneline --graph --decorate --all"
 ```
 
-## Claude / Cursor
+## Claude / Codex / Cursor
 
 ```bash
-~/workflow-helper/skills/install.sh
+~/workflow-helper/ubuntu/setup-llm.sh
 ```
 
-That command links `writing-docstring-summaries` and `writing-docstring-summaries-strict` into `~/.agents`, `~/.cursor`, and `~/.claude`.
+Updates [RTK](https://github.com/rtk-ai/rtk) and wires it into Claude Code, Codex, and Cursor. Installs [caveman](https://github.com/JuliusBrussee/caveman), [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd](https://github.com/ayghri/i-have-adhd), and [Context7](https://github.com/upstash/context7) (`ctx7` CLI + MCP), then links the repo docstring skills. Set `CONTEXT7_API_KEY` or reuse the key already in `~/.cursor/mcp.json` / `~/.claude.json`.
+
+```bash
+./ubuntu/setup-llm.sh rtk      # binary + hooks only
+./ubuntu/setup-llm.sh skills   # skills / plugins only
+```
 
 | Topic | File |
 |---|---|
