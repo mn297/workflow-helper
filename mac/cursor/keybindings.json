@@ -1,0 +1,149 @@
+// Cursor (macOS). Restore:
+//   mkdir -p ~/Library/Application\ Support/Cursor/User
+//   cp ~/workflow-helper/mac/cursor/keybindings.json ~/Library/Application\ Support/Cursor/User/keybindings.json
+// Place your key bindings in this file to override the defaults
+[
+    // ---------------------------------------------------------------------
+    // Editor groups: absolute focus, not relative
+    // ---------------------------------------------------------------------
+    {
+        "key": "ctrl+cmd+1",
+        "command": "workbench.action.focusFirstEditorGroup"
+    },
+    {
+        "key": "ctrl+cmd+2",
+        "command": "workbench.action.focusSecondEditorGroup"
+    },
+    {
+        "key": "ctrl+cmd+e",
+        "command": "workbench.action.focusFirstEditorGroup"
+    },
+    {
+        "key": "cmd+k cmd+e",
+        "command": "workbench.action.focusFirstEditorGroup"
+    },
+    {
+        "key": "ctrl+1",
+        "command": "-workbench.action.openEditorAtIndex1"
+    },
+    {
+        "key": "ctrl+2",
+        "command": "-workbench.action.openEditorAtIndex2"
+    },
+    {
+        "key": "cmd+r cmd+left",
+        "command": "-workbench.action.focusLeftGroup"
+    },
+    {
+        "key": "cmd+r cmd+right",
+        "command": "-workbench.action.focusRightGroup"
+    },
+
+    // ---------------------------------------------------------------------
+    // Terminal: focus, and hide/show
+    // ---------------------------------------------------------------------
+    {
+        "key": "ctrl+cmd+3",
+        "command": "workbench.action.terminal.focus"
+    },
+    {
+        "key": "ctrl+cmd+`",
+        "command": "workbench.action.terminal.focus"
+    },
+    {
+        // Pure visibility toggle, independent of focus. togglePanel is focus-agnostic,
+        // unlike toggleTerminal, which only hides when the terminal is the focused view.
+        // Both commands are on Cursor's keybinding passthrough list, so this keeps
+        // working while a webview (chat, browser) holds focus.
+        "key": "ctrl+`",
+        "command": "workbench.action.togglePanel",
+        "when": "panelVisible && activePanel == 'terminal'"
+    },
+    {
+        // Panel closed, or open on another view such as Output: show the terminal.
+        "key": "ctrl+`",
+        "command": "workbench.action.terminal.toggleTerminal",
+        "when": "!panelVisible || activePanel != 'terminal'"
+    },
+
+    // ---------------------------------------------------------------------
+    // Terminal navigation: opt+cmd+up/down between groups (tabs),
+    // opt+cmd+left/right between split panes inside one group
+    // ---------------------------------------------------------------------
+    {
+        "key": "alt+cmd+up",
+        "command": "workbench.action.terminal.focusPrevious",
+        "when": "terminalFocus || terminalTabsFocus"
+    },
+    {
+        "key": "alt+cmd+down",
+        "command": "workbench.action.terminal.focusNext",
+        "when": "terminalFocus || terminalTabsFocus"
+    },
+    {
+        "key": "alt+cmd+left",
+        "command": "workbench.action.terminal.focusPreviousPane",
+        "when": "terminalFocus || terminalTabsFocus"
+    },
+    {
+        "key": "alt+cmd+right",
+        "command": "workbench.action.terminal.focusNextPane",
+        "when": "terminalFocus || terminalTabsFocus"
+    },
+    {
+        "key": "cmd+\\",
+        "command": "workbench.action.terminal.split",
+        "when": "terminalFocus || terminalTabsFocus"
+    },
+    {
+        "key": "alt+cmd+backspace",
+        "command": "workbench.action.terminal.kill",
+        "when": "terminalFocus || terminalTabsFocus"
+    },
+    {
+        // Word-wise movement in the shell (opt+left / opt+right).
+        "key": "alt+left",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "\u001bb"
+        },
+        "when": "terminalFocus"
+    },
+    {
+        "key": "alt+right",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "\u001bf"
+        },
+        "when": "terminalFocus"
+    },
+
+    // ---------------------------------------------------------------------
+    // Cursor chat: cmd+i hides or shows it from any focus.
+    // cmd+L keeps its default job of focusing chat.
+    // ---------------------------------------------------------------------
+    {
+        "key": "cmd+i",
+        "command": "workbench.action.toggleAgents"
+    },
+    {
+        "key": "ctrl+cmd+l",
+        "command": "composer.addfilestocomposer"
+    },
+
+    // ---------------------------------------------------------------------
+    // Explorer
+    // ---------------------------------------------------------------------
+    {
+        "key": "ctrl+shift+q",
+        "command": "workbench.files.action.collapseExplorerFolders"
+    },
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "\u001b\r"
+        },
+        "when": "terminalFocus"
+    }
+]

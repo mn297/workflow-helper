@@ -125,5 +125,11 @@ export TURTLEBOT3_MODEL=burger
 # sros
 
 # list in MB and full path
+export CLICOLOR=1
+export LSCOLORS=ExFxBxDxCxegedabagacad
+alias ls='ls -G'
 alias ll='ls -alhF'
 export HOST="localhost"
+
+# Must be last: command colors as you type
+source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
