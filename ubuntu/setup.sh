@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Machine setup for Ubuntu 24.04: packages, dev tools, desktop apps, and the
-# MX Master thumb-button scroll mapping.
+# Machine setup for Ubuntu 24.04: packages, dev tools, desktop apps, and
+# thumb-button scroll mapping for every physical mouse currently plugged in.
 #
 # Best-effort: no `set -e`, so one broken install does not abort the rest, and
 # every failure is listed at the end.
@@ -12,7 +12,7 @@
 #   ./setup.sh apps                     # installs only
 #   ./setup.sh scroll                   # thumb-scroll mapping only
 #   SPEED=30 ./setup.sh scroll          # retune the scroll speed
-#   DEVICE="Logitech MX Master 3S" ./setup.sh scroll
+#   DEVICE="USB OPTICAL MOUSE " ./setup.sh scroll   # one mouse only
 #
 set -uo pipefail
 
@@ -232,7 +232,8 @@ fi
 # of those alongside this.
 if run_section scroll; then
 
-	DEVICE="${DEVICE:-Logitech MX Master 3S}"
+	# Empty DEVICE = every physical mouse. Set it to bind only that name.
+	DEVICE="${DEVICE-}"
 	PRESET="${PRESET:-thumb-scroll}"
 	SPEED="${SPEED:-120}" # notches/sec ~= SPEED/2 (rel_rate is 60 Hz)
 
@@ -262,74 +263,141 @@ if run_section scroll; then
 		systemctl is-active input-remapper-daemon.service
 	fi
 
-	# ---------------------------------------------------- 2. write the preset
-	# input-remapper keys a preset to a device by an md5 of its capabilities+name,
-	# so compute it from the live device rather than hardcoding it.
-	say "Writing preset '$PRESET' for '$DEVICE'"
-	DEVICE="$DEVICE" PRESET="$PRESET" SPEED="$SPEED" \
+	# ---------------------------------------------------- 2. write presets
+	# input-remapper autoloads by exact device name, so a hardcoded mouse
+	# (MX Master, G502, …) silently does nothing after a swap. Read names
+	# from /proc/bus/input/devices — that does not need /dev/input access —
+	# and write the same 8/9 mapping for every physical pointer.
+	say "Writing preset '$PRESET' for connected mice"
+	BOUND_FILE="$(mktemp)"
+	DEVICE="$DEVICE" PRESET="$PRESET" SPEED="$SPEED" BOUND_FILE="$BOUND_FILE" \
 		UP_CODE="$UP_CODE" DOWN_CODE="$DOWN_CODE" python3 - <<'PY'
-import os, sys, evdev
-from inputremapper.utils import get_device_hash
+import json, os, sys, evdev
 from inputremapper.configs.preset import Preset
 from inputremapper.configs.mapping import Mapping
 from inputremapper.configs.input_config import InputCombination, InputConfig
 from inputremapper.configs.paths import get_preset_path
 from inputremapper.configs.global_config import GlobalConfig
 
-name  = os.environ["DEVICE"]
+EV_KEY, EV_REL = 1, 2
+REL_X, REL_Y = 0, 1
+
+def physical_mice(path="/proc/bus/input/devices"):
+    # Unique names, first occurrence wins. Skip virtual/forwarded nodes
+    # (empty Phys, keyd, input-remapper) and anything that is not a
+    # relative-XY pointer — keyboards and receivers that only have keys.
+    found = {}
+    for block in open(path).read().split("\n\n"):
+        rec = {}
+        for line in block.splitlines():
+            if line.startswith("N: Name="):
+                value = line.split("=", 1)[1]
+                rec["name"] = value[1:-1] if value.startswith('"') and value.endswith('"') else value
+            elif line.startswith("P: Phys="):
+                rec["phys"] = line.split("=", 1)[1]
+            elif line.startswith("B: EV="):
+                rec["ev"] = int(line.split("=", 1)[1].split()[0], 16)
+            elif line.startswith("B: REL="):
+                rec["rel"] = int(line.split("=", 1)[1].split()[0], 16)
+        name = rec.get("name") or ""
+        phys = rec.get("phys") or ""
+        ev, rel = rec.get("ev", 0), rec.get("rel", 0)
+        if not phys or name.startswith(("keyd ", "input-remapper")):
+            continue
+        if not (ev & (1 << EV_KEY) and ev & (1 << EV_REL)):
+            continue
+        if not (rel & (1 << REL_X) and rel & (1 << REL_Y)):
+            continue
+        found.setdefault(name, None)
+    return list(found)
+
+wanted = os.environ.get("DEVICE") or None
+mice = physical_mice()
+if wanted:
+    if wanted not in mice:
+        shown = "\n".join(f"  {m!r}" for m in mice) or "  (none)"
+        sys.exit(f"Device {wanted!r} not found. Plugged in:\n{shown}")
+    mice = [wanted]
+if not mice:
+    sys.exit("No physical mouse found. Plug one in and rerun ./setup.sh scroll")
+
 preset_name = os.environ["PRESET"]
 speed = int(os.environ["SPEED"])
-
-dev = next((d for d in map(evdev.InputDevice, evdev.list_devices())
-            if d.name == name and evdev.ecodes.EV_REL in d.capabilities()), None)
-if dev is None:
-    sys.exit(f"Device {name!r} not found. Plug it in, or list names with:\n"
-             f"  python3 -c \"import evdev;[print(evdev.InputDevice(p).name) "
-             f"for p in evdev.list_devices()]\"")
-
-h = get_device_hash(dev)
-print(f"{dev.path}  hash={h}")
-
-preset = Preset(get_preset_path(name, preset_name))
-for code, direction in ((int(os.environ["UP_CODE"]), "up"),
-                        (int(os.environ["DOWN_CODE"]), "down")):
-    preset.add(Mapping(
-        input_combination=InputCombination(
-            [InputConfig(type=evdev.ecodes.EV_KEY, code=code, origin_hash=h)]
-        ),
-        target_uinput="mouse",
-        output_symbol=f"wheel({direction}, {speed})",
-        mapping_type="key_macro",
-        name=f"{evdev.ecodes.BTN[code]} -> scroll {direction}",
-    ))
-preset.save()
-
-# autoload = re-apply this preset at every login
 cfg = GlobalConfig()
 cfg.load_config()
-cfg.set_autoload_preset(name, preset_name)   # persists on its own
+for name in mice:
+    print(f"binding {name!r}")
+    path = get_preset_path(name, preset_name)
+    preset = Preset(path)
+    for code, direction in ((int(os.environ["UP_CODE"]), "up"),
+                            (int(os.environ["DOWN_CODE"]), "down")):
+        preset.add(Mapping(
+            input_combination=InputCombination(
+                [InputConfig(type=evdev.ecodes.EV_KEY, code=code)]
+            ),
+            target_uinput="mouse",
+            output_symbol=f"wheel({direction}, {speed})",
+            mapping_type="key_macro",
+            name=f"{evdev.ecodes.BTN[code]} -> scroll {direction}",
+        ))
+    preset.save()
+    cfg.set_autoload_preset(name, preset_name)
+
+with open(os.environ["BOUND_FILE"], "w") as f:
+    json.dump(mice, f)
 PY
 
+	mapfile -t BOUND_NAMES < <(python3 -c 'import json,sys; [print(n) for n in json.load(open(sys.argv[1]))]' "$BOUND_FILE")
+	rm -f "$BOUND_FILE"
+
 	# ------------------------------------------------------------ 3. apply now
+	# `start --device` asks the CLI process to resolve the mouse via
+	# evdev.list_devices(). That returns nothing unless this session has
+	# /dev/input (seat ACL or `input` group), so it reports "unknown
+	# device" even when the daemon can see the mouse. `autoload` asks the
+	# daemon, which already enumerated it.
 	say "Applying"
-	input-remapper-control --command stop --device "$DEVICE" >/dev/null 2>&1 || true
-	input-remapper-control --command start --device "$DEVICE" --preset "$PRESET"
+	input-remapper-control --command stop-all >/dev/null 2>&1 || true
+	input-remapper-control --command autoload
 
 	sleep 2
-	if grep -q "input-remapper $DEVICE forwarded" /proc/bus/input/devices; then
-		say "Active — hold button 8 to scroll up, button 9 to scroll down."
-	else
-		# Not fatal here: the mouse may simply not be plugged into this machine.
+	active=0
+	for name in "${BOUND_NAMES[@]}"; do
+		if grep -Fq "input-remapper ${name} forwarded" /proc/bus/input/devices; then
+			echo "active: $name"
+			active=1
+		fi
+	done
+	if [ "$active" -eq 0 ]; then
+		# Not fatal here: the grab may still be racing a HID++ daemon.
 		echo "WARNING: injection did not come up. Check: journalctl -u input-remapper-daemon -n 40" >&2
+	else
+		say "Active — hold button 8 to scroll up, button 9 to scroll down."
 	fi
+
+	# input-remapper's own autoload only knows names already in config.json.
+	# Re-run this section at login so a later mouse swap is picked up without
+	# having to remember DEVICE=.
+	say "Installing login autostart"
+	mkdir -p "$HOME/.config/autostart"
+	cat >"$HOME/.config/autostart/workflow-helper-scroll.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=workflow-helper thumb-scroll
+Comment=Map mouse side buttons to hold-to-scroll for whatever mice are plugged in
+Exec=/bin/bash $HERE/setup.sh scroll
+X-GNOME-Autostart-enabled=true
+EOF
 
 	cat <<EOF
 
 Speed        : $SPEED  (~$((SPEED / 2)) notches/sec)
-Preset file  : ~/.config/input-remapper-2/presets/$DEVICE/$PRESET.json
+Bound        :$(printf ' %q' "${BOUND_NAMES[@]}")
 Autoload     : ~/.config/input-remapper-2/config.json
+Login bind   : ~/.config/autostart/workflow-helper-scroll.desktop
 
 Retune       : SPEED=30 ./setup.sh scroll
+One mouse    : DEVICE='the evdev name' ./setup.sh scroll
 Disable      : input-remapper-control --command stop-all
 Re-enable    : input-remapper-control --command autoload
 GUI          : input-remapper-gtk
