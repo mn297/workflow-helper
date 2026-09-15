@@ -1,14 +1,15 @@
 #!/bin/bash
 #
-# RTK plus agent skills for Claude Code, Codex, and Cursor.
+# Agent skills for Claude Code, Codex, and Cursor. RTK is optional.
 #
 # Best-effort: no `set -e`, so one broken install does not abort the rest, and
 # every failure is listed at the end.
 #
 # Usage:
-#   ./setup-llm.sh              # RTK + skills
-#   ./setup-llm.sh rtk          # binary + hooks only
-#   ./setup-llm.sh skills       # skills / plugins only
+#   ./setup-llm.sh              # skills / plugins
+#   ./setup-llm.sh skills       # same as default
+#   ./setup-llm.sh rtk          # optional: binary + hooks
+#   ./setup-llm.sh all          # RTK + skills
 #
 set -uo pipefail
 
@@ -20,13 +21,13 @@ trap 'printf "\nfailures: %s\n" "${#FAILED[@]}"; printf "  %s\n" "${FAILED[@]:-n
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/.." && pwd)"
 
-SECTION="${1:-all}"
+SECTION="${1:-skills}"
 run_section() { [ "$SECTION" = all ] || [ "$SECTION" = "$1" ]; }
 
 case "$SECTION" in
 all | rtk | skills) ;;
 *)
-	echo "Usage: $0 [all|rtk|skills]" >&2
+	echo "Usage: $0 [skills|rtk|all]" >&2
 	exit 1
 	;;
 esac
