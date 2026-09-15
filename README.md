@@ -14,11 +14,12 @@ git config --global alias.lol "log --oneline --graph --decorate --all"
 ~/workflow-helper/ubuntu/setup-llm.sh
 ```
 
-Updates [RTK](https://github.com/rtk-ai/rtk) and wires it into Claude Code, Codex, and Cursor. Installs [caveman](https://github.com/JuliusBrussee/caveman), [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd](https://github.com/ayghri/i-have-adhd), and [Context7](https://github.com/upstash/context7) (`ctx7` CLI + MCP), then links the repo docstring skills. Set `CONTEXT7_API_KEY` or reuse the key already in `~/.cursor/mcp.json` / `~/.claude.json`.
+Installs [caveman](https://github.com/JuliusBrussee/caveman), [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd](https://github.com/ayghri/i-have-adhd), and [Context7](https://github.com/upstash/context7) (`ctx7` CLI + MCP), then links the repo docstring skills. Set `CONTEXT7_API_KEY` or reuse the key already in `~/.cursor/mcp.json` / `~/.claude.json`. [RTK](https://github.com/rtk-ai/rtk) is optional.
 
 ```bash
-./ubuntu/setup-llm.sh rtk      # binary + hooks only
-./ubuntu/setup-llm.sh skills   # skills / plugins only
+./ubuntu/setup-llm.sh          # skills / plugins (default)
+./ubuntu/setup-llm.sh rtk      # optional: binary + hooks
+./ubuntu/setup-llm.sh all      # RTK + skills
 ```
 
 | Topic | File |
