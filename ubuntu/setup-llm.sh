@@ -41,11 +41,36 @@ say() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 
 # Official agent slugs for `npx skills add --agent`.
 SKILL_AGENTS="claude-code cursor codex"
+# Caveman is not in this list. Claude Code loads one skill (caveman-commit)
+# plus a local hook. The full pack is for Cursor and Codex only.
 SKILL_PACKAGES=(
-	JuliusBrussee/caveman
 	AminBlg/SimpleEnglish
 	ayghri/i-have-adhd
 	upstash/context7
+)
+# Skills the caveman repo ships besides caveman-commit. Claude must not
+# auto-load these; the plugin that did was replaced by ubuntu/claude/hooks.
+CAVEMAN_SKILLS_NOT_FOR_CLAUDE=(
+	caveman
+	cavecrew
+	caveman-compress
+	caveman-discover
+	caveman-evidence-review
+	caveman-explore
+	caveman-help
+	caveman-learn
+	caveman-manage
+	caveman-optimize
+	caveman-review
+	caveman-setup
+	caveman-stats
+	compress
+	investigate-first
+	lean-build
+	migration
+	safe-refactor
+	surgical-patch
+	verify-and-stop
 )
 
 # Reuse CONTEXT7_API_KEY or a key already in local MCP config. Never print it.
@@ -107,6 +132,58 @@ run_maybe_tty() {
 	"$@"
 }
 
+# Copy the local caveman hook and user CLAUDE.md, and wire the hook into
+# ~/.claude/settings.json without duplicating an entry that already calls it.
+install_claude_user_files() {
+	local hook_dst="$HOME/.claude/hooks/caveman.sh"
+	mkdir -p "$HOME/.claude/hooks"
+	cp "$REPO/ubuntu/claude/hooks/caveman.sh" "$hook_dst"
+	chmod +x "$hook_dst"
+	cp "$REPO/ubuntu/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+	if [ ! -s "$HOME/.claude/.caveman-active" ]; then
+		printf 'full\n' >"$HOME/.claude/.caveman-active"
+	fi
+	python3 - "$hook_dst" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+hook = sys.argv[1]
+settings_path = Path.home() / ".claude" / "settings.json"
+settings = {}
+if settings_path.exists() and settings_path.stat().st_size:
+    settings = json.loads(settings_path.read_text())
+hooks = settings.setdefault("hooks", {})
+
+
+def command_block(arg, status):
+    return {
+        "type": "command",
+        "command": f"bash {hook} {arg}",
+        "timeout": 5,
+        "statusMessage": status,
+    }
+
+
+def already(entries):
+    return "hooks/caveman.sh" in json.dumps(entries)
+
+
+session = hooks.setdefault("SessionStart", [])
+if not already(session):
+    session.append(
+        {
+            "matcher": "startup|resume|clear|compact",
+            "hooks": [command_block("session", "Loading caveman mode")],
+        }
+    )
+prompt = hooks.setdefault("UserPromptSubmit", [])
+if not already(prompt):
+    prompt.append({"hooks": [command_block("prompt", "caveman")]})
+settings_path.write_text(json.dumps(settings, indent=2) + "\n")
+PY
+}
+
 ########################################################################## rtk
 if run_section rtk; then
 
@@ -147,6 +224,18 @@ if run_section skills; then
 			npx -y skills add "$pkg" -g -y --agent $SKILL_AGENTS
 		done
 
+		# Full caveman pack auto-loads dozens of skills into Claude Code.
+		# Claude keeps caveman-commit only; terse mode is the local hook.
+		say "Installing caveman skills for Cursor and Codex"
+		npx -y skills add JuliusBrussee/caveman -g -y --agent cursor codex
+		say "Installing caveman-commit for Claude Code"
+		npx -y skills add JuliusBrussee/caveman -g -y --skill caveman-commit --agent claude-code
+		for skill in "${CAVEMAN_SKILLS_NOT_FOR_CLAUDE[@]}"; do
+			if [ -e "$HOME/.claude/skills/$skill" ]; then
+				npx -y skills remove -g -y -a claude-code -s "$skill"
+			fi
+		done
+
 		say "Linking repo docstring skills"
 		bash "$REPO/skills/install.sh"
 
@@ -172,14 +261,25 @@ if run_section skills; then
 
 	if command -v claude >/dev/null; then
 		say "Installing Claude Code plugins"
-		run_maybe_tty claude plugin marketplace add JuliusBrussee/caveman
-		run_maybe_tty claude plugin install caveman@caveman
+		# simple-english and i-have-adhd stay plugins. Caveman is a local
+		# hook (the plugin loads the whole skill pack). Context7 is MCP,
+		# wired above; the plugin would register a second server.
 		run_maybe_tty claude plugin marketplace add AminBlg/SimpleEnglish
 		run_maybe_tty claude plugin install simple-english@simple-english
 		run_maybe_tty claude plugin marketplace add ayghri/i-have-adhd
 		run_maybe_tty claude plugin install i-have-adhd@i-have-adhd
-		run_maybe_tty claude plugin marketplace add upstash/context7
-		run_maybe_tty claude plugin install context7@context7-marketplace
+		run_maybe_tty claude plugin marketplace add anthropics/claude-plugins-official
+		run_maybe_tty claude plugin install mattpocock-skills@claude-plugins-official
+
+		say "Removing Claude plugins the local hook and Context7 MCP replace"
+		for plugin in caveman@caveman context7@context7-marketplace; do
+			if claude plugin list 2>/dev/null | grep -q "$plugin"; then
+				run_maybe_tty claude plugin uninstall "$plugin" -y
+			fi
+		done
+
+		say "Installing Claude caveman hook and user CLAUDE.md"
+		install_claude_user_files
 	else
 		echo "claude CLI not on PATH, skipping Claude plugins"
 	fi
