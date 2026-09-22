@@ -14,7 +14,7 @@ git config --global alias.lol "log --oneline --graph --decorate --all"
 ~/workflow-helper/ubuntu/setup-llm.sh
 ```
 
-Installs [caveman](https://github.com/JuliusBrussee/caveman), [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd](https://github.com/ayghri/i-have-adhd), and [Context7](https://github.com/upstash/context7) (`ctx7` CLI + MCP), then links the repo docstring skills. Set `CONTEXT7_API_KEY` or reuse the key already in `~/.cursor/mcp.json` / `~/.claude.json`. [RTK](https://github.com/rtk-ai/rtk) is optional.
+Installs [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd](https://github.com/ayghri/i-have-adhd), and [Context7](https://github.com/upstash/context7) (`ctx7` CLI + MCP), then links the repo docstring skills. [Caveman](https://github.com/JuliusBrussee/caveman) skills install for Cursor and Codex. Claude Code gets `caveman-commit` plus the local hook in [`ubuntu/claude/hooks/caveman.sh`](ubuntu/claude/hooks/caveman.sh), not the caveman plugin. Claude plugins are simple-english, i-have-adhd, and mattpocock-skills. Context7 on Claude is MCP only. Set `CONTEXT7_API_KEY` or reuse the key already in `~/.cursor/mcp.json` / `~/.claude.json`. [RTK](https://github.com/rtk-ai/rtk) is optional.
 
 ```bash
 ./ubuntu/setup-llm.sh          # skills / plugins (default)
