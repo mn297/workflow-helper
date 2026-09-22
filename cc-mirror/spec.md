@@ -36,7 +36,6 @@ Double-click a preview box:
 |---|---|---|
 | `~/.claude/sessions/<pid>.json` | pid, sessionId, cwd, name, status (`busy` / `waiting` / `idle`), version | Claude Code ≥ 2.1.224 writes these itself |
 | `~/.claude/projects/<cwd-slug>/<sessionId>.jsonl` | live transcript: prompts, responses, tool calls, tool results | appends in real time |
-| `claude-auto-retry` (patched, [notes](../claude/auto-retry-colors/README.md)) | each new `claude` runs in its own tmux session `claude-retry-<pid>-<ts>` | installed 2026-08-19 |
 | `tmux capture-pane -e -p` | exact rendered screen with colors | tmux did the emulation |
 | `tmux send-keys` | any keystroke into the session | zero code |
 
@@ -52,11 +51,10 @@ Traps, verified against live data:
 
 ## Two session classes
 
-- **`[tmux]`** — launched through `claude-auto-retry`. Live center view and
+- **`[tmux]`** — the session is already inside tmux. Live center view and
   input.
-- **`[ro]`** — a plain terminal (old Cursor sessions). Preview and a read-only
-  transcript view. Do not restart these. Each converts to `[tmux]` when it
-  ends and the user launches `claude` again.
+- **`[ro]`** — a plain terminal (typical Cursor sessions). Preview and a
+  read-only transcript view.
 
 ## Architecture
 
@@ -105,7 +103,7 @@ sidebar stays visible.
 2. Hash the capture. Repaint only when the hash changes.
 3. Forward every keystroke and paste with `send-keys -l`, special keys by
    name. For a submitted line, send text, wait 150 ms, then send Enter
-   (Ink paste-burst trap — claude-auto-retry `src/tmux.js` documents it).
+   (Ink paste-burst trap: send text, wait, then Enter).
 4. Exit: click outside the box, or `Ctrl+\`. All other keys belong to Claude.
 5. Copy text out: Shift+drag (terminal-native selection bypass). No code.
 6. `[ro]` sessions get a scrollable transcript render instead, read-only.
@@ -148,25 +146,22 @@ Ordered by expected value:
    event-driven output streaming. Removes the last latency.
 4. **Approve/deny buttons** — a `waiting` preview box gets click targets that
    send the approval keys. Triage without opening the center view.
-5. **Retry state from claude-auto-retry** — read
-   `~/.claude-auto-retry/status/*.json` and badge panes that wait on a rate
-   limit or back off from an overload.
-6. **Messaging socket** — each record advertises
+5. **Messaging socket** — each record advertises
    `messagingSocketPath` (`/run/user/1000/cc-socks/<pid>.sock`). Protocol not
    yet inspected. If it accepts structured input, it replaces `send-keys`.
-7. **Web dashboard with xterm.js** — pixel-perfect live mirrors in a browser
+6. **Web dashboard with xterm.js** — pixel-perfect live mirrors in a browser
    (xterm.js is a full terminal emulator; `ttyd` can serve a tmux session
    as-is). The escape hatch if terminal mouse UX disappoints.
-8. **Ended-session browser** — transcripts outlive sessions; browse and search
+7. **Ended-session browser** — transcripts outlive sessions; browse and search
    old JSONL.
-9. **Remote machines** — same records and tmux over SSH.
+8. **Remote machines** — same records and tmux over SSH.
 
 ## Non-goals
 
 - VS Code/Cursor extension, proposed APIs, WebSocket transport
 - own terminal emulation or ANSI parsing (tmux renders; capture is text+SGR)
 - persistence, auth, cloud, remote machines, packaging
-- retry and orchestration (claude-auto-retry owns retry; `cs` owns queues)
+- retry and orchestration (`cs` owns queues)
 - session spawning and recovery
 
 ## Definition of done
