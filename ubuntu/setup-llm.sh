@@ -132,14 +132,17 @@ run_maybe_tty() {
 	"$@"
 }
 
-# Copy the local caveman hook and user CLAUDE.md, and wire the hook into
-# ~/.claude/settings.json without duplicating an entry that already calls it.
+# Copy the local caveman hook, status line script, and user CLAUDE.md, and
+# wire them into ~/.claude/settings.json without duplicating a hook entry.
 install_claude_user_files() {
 	local hook_dst="$HOME/.claude/hooks/caveman.sh"
 	mkdir -p "$HOME/.claude/hooks"
 	cp "$REPO/ubuntu/claude/hooks/caveman.sh" "$hook_dst"
 	chmod +x "$hook_dst"
 	cp "$REPO/ubuntu/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+	cp "$REPO/ubuntu/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
+	# The status line script parses its JSON input with jq.
+	command -v jq >/dev/null || sudo apt install -y jq
 	if [ ! -s "$HOME/.claude/.caveman-active" ]; then
 		printf 'full\n' >"$HOME/.claude/.caveman-active"
 	fi
@@ -180,6 +183,10 @@ if not already(session):
 prompt = hooks.setdefault("UserPromptSubmit", [])
 if not already(prompt):
     prompt.append({"hooks": [command_block("prompt", "caveman")]})
+settings["statusLine"] = {
+    "type": "command",
+    "command": f"bash {Path.home() / '.claude' / 'statusline-command.sh'}",
+}
 settings_path.write_text(json.dumps(settings, indent=2) + "\n")
 PY
 }

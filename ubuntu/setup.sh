@@ -1,7 +1,8 @@
 #!/bin/bash
 #
-# Machine setup for Ubuntu 24.04: packages, dev tools, desktop apps, and
-# thumb-button scroll mapping for every physical mouse currently plugged in.
+# Machine setup for Ubuntu 24.04: packages, dev tools, desktop apps,
+# thumb-button scroll mapping for every physical mouse currently plugged in, and
+# brightness keys that change the monitor under the cursor.
 #
 # Best-effort: no `set -e`, so one broken install does not abort the rest, and
 # every failure is listed at the end.
@@ -13,6 +14,9 @@
 #   ./setup.sh scroll                   # thumb-scroll mapping only
 #   SPEED=30 ./setup.sh scroll          # retune the scroll speed
 #   DEVICE="USB OPTICAL MOUSE " ./setup.sh scroll   # one mouse only
+#   ./setup.sh brightness               # brightness keys follow the cursor
+#   KEYS=fn ./setup.sh brightness       # use the Fn keys, not numpad 8/5
+#   STEP=5 ./setup.sh brightness        # 5% per press, not 10%
 #
 set -uo pipefail
 
@@ -38,12 +42,26 @@ SECTION="${1:-all}"
 run_section() { [ "$SECTION" = all ] || [ "$SECTION" = "$1" ]; }
 
 case "$SECTION" in
-all | apps | scroll) ;;
+all | apps | scroll | brightness) ;;
 *)
-	echo "Usage: $0 [all|apps|scroll]" >&2
+	echo "Usage: $0 [all|apps|scroll|brightness]" >&2
 	exit 1
 	;;
 esac
+
+KEYS="${KEYS:-numpad}"
+case "$KEYS" in
+numpad | fn) ;;
+*)
+	echo "KEYS must be numpad or fn, got '$KEYS'" >&2
+	exit 1
+	;;
+esac
+
+if ! [[ "${STEP:-10}" =~ ^[1-9][0-9]?$|^100$ ]]; then
+	echo "STEP must be 1..100, got '$STEP'" >&2
+	exit 1
+fi
 
 say() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 
@@ -128,11 +146,6 @@ if run_section apps; then
 		echo "deb unavailable, falling back to snap"
 		sudo snap install obsidian --classic
 	fi
-
-	say "Installing ddcutil (external monitor brightness)"
-	sudo apt install -y ddcutil i2c-tools
-	sudo usermod -aG i2c "$USER"
-	ddcutil detect
 
 	say "Installing xscreensaver"
 	sudo apt install -y xscreensaver xscreensaver-gl-extra xscreensaver-data-extra
@@ -410,6 +423,96 @@ If nothing responds, check for another process grabbing the mouse:
   journalctl -u input-remapper-daemon -n 40 | grep -i grab
 A "Device or resource busy" there means a HID++ daemon (OpenLogi, Solaar,
 logiops) took the device first. Stop and mask it, then rerun this section.
+EOF
+
+fi
+
+#################################################################### brightness
+# Brightness keys follow the mouse: each press changes the monitor the cursor is
+# on, STEP% (default 10) per press. The laptop panel goes through logind, external monitors
+# through DDC/CI. The logic lives in cursor-brightness.sh; this section installs
+# the tools and binds the keys.
+#
+#   KEYS=numpad (default)  numpad 8 = up, numpad 5 = down
+#   KEYS=fn                the Fn brightness keys, taken away from GNOME
+#
+# xbindkeys binds keycodes, not keysyms, so the NumLock state does not matter
+# (80 = KP_8/KP_Up, 84 = KP_5/KP_Begin). Only one client can grab a key, so
+# KEYS=fn first clears GNOME's own brightness bindings; KEYS=numpad restores
+# them. /etc/xdg/autostart/xbindkeys.desktop starts xbindkeys at login whenever
+# ~/.xbindkeysrc exists. X11 only: Wayland gives no global cursor position.
+#
+# Do not seed ~/.xbindkeysrc with `xbindkeys --defaults`: it binds Ctrl+Shift+Q.
+if run_section brightness; then
+
+	case "$KEYS" in
+	numpad) UP_KEY=c:80 DOWN_KEY=c:84 ;;
+	fn) UP_KEY=c:233 DOWN_KEY=c:232 ;;
+	esac
+	STEP="${STEP:-10}"
+
+	say "Installing ddcutil, xdotool, xbindkeys"
+	missing=()
+	for pkg in ddcutil i2c-tools xdotool xbindkeys; do
+		dpkg -s "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
+	done
+	if [ ${#missing[@]} -gt 0 ]; then
+		sudo apt-get install -y "${missing[@]}"
+	else
+		echo "already installed"
+	fi
+	# ddcutil's udev rule already gives the desktop user the display buses. The
+	# group also covers sessions without a seat (ssh).
+	id -nG "$USER" | grep -qw i2c || sudo usermod -aG i2c "$USER"
+	ddcutil detect --brief
+
+	say "Binding brightness keys ($KEYS)"
+	if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v gsettings >/dev/null; then
+		MEDIA_KEYS=org.gnome.settings-daemon.plugins.media-keys
+		for key in screen-brightness-up-static screen-brightness-down-static; do
+			if [ "$KEYS" = fn ]; then
+				gsettings set "$MEDIA_KEYS" "$key" "[]"
+			else
+				gsettings reset "$MEDIA_KEYS" "$key"
+			fi
+		done
+	else
+		echo "no session bus (ssh/tty?), GNOME brightness keys left as they are"
+	fi
+
+	RC="$HOME/.xbindkeysrc"
+	touch "$RC"
+	sed -i '/^# >>> workflow-helper brightness >>>$/,/^# <<< workflow-helper brightness <<<$/d' "$RC"
+	cat >>"$RC" <<EOF
+# >>> workflow-helper brightness >>>
+# Written by ubuntu/setup.sh brightness; edits inside this block are lost.
+"STEP=$STEP '$HERE/cursor-brightness.sh' up"
+  $UP_KEY
+"STEP=$STEP '$HERE/cursor-brightness.sh' down"
+  $DOWN_KEY
+# <<< workflow-helper brightness <<<
+EOF
+
+	if [ "${XDG_SESSION_TYPE:-}" = wayland ]; then
+		echo "WARNING: Wayland session. Log in with 'Ubuntu on Xorg' for this to work." >&2
+	elif [ -n "${DISPLAY:-}" ]; then
+		pkill -x xbindkeys || true
+		xbindkeys
+		pgrep -x xbindkeys >/dev/null && echo "xbindkeys running"
+	else
+		echo "no X display, xbindkeys starts at next login"
+	fi
+
+	cat <<EOF
+
+Keys         : $KEYS  (up $UP_KEY, down $DOWN_KEY)
+Bindings     : ~/.xbindkeysrc
+Step         : $STEP%  (change: STEP=5 ./setup.sh brightness)
+Try it       : $HERE/cursor-brightness.sh down
+
+The first press on an external monitor takes ~3 s: it scans the i2c buses
+for the monitor's EDID and caches the bus until reboot. Later presses take
+~0.3 s. If a monitor never responds, turn on DDC/CI in its on-screen menu.
 EOF
 
 fi
