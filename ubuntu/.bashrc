@@ -324,3 +324,11 @@ export LIBGL_ALWAYS_SOFTWARE=1
 
 # export LIBGL_ALWAYS_INDIRECT=1
 # export LIBGL_ALWAYS_INDIRECT=0
+
+# fzf: Ctrl-R history, Ctrl-T files, Alt-C cd
+if [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
+	source /usr/share/doc/fzf/examples/key-bindings.bash
+fi
+if [ -f /usr/share/doc/fzf/examples/completion.bash ]; then
+	source /usr/share/doc/fzf/examples/completion.bash
+fi
