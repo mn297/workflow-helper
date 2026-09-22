@@ -9,6 +9,14 @@ cp ~/workflow-helper/ubuntu/cursor/keybindings.json ~/.config/Cursor/User/keybin
 
 Merge [`settings.json`](settings.json) into `~/.config/Cursor/User/settings.json`.
 
+Install extensions from [`extensions.txt`](extensions.txt):
+
+```bash
+grep -v '^#' ~/workflow-helper/ubuntu/cursor/extensions.txt | while read -r ext; do
+  cursor --install-extension "$ext"
+done
+```
+
 `commandsToSkipShell` must include `toggleSidebarVisibility` (Ctrl+B) and `toggleAuxiliaryBar` (Ctrl+I). If they are missing, the terminal eats both keys. Ctrl+I is ASCII Tab.
 
 Also set `vim.handleKeys` `"<C-i>"`, `"<C-`>"`, `"<C-b>"` to `false`. See [`vim_vsc.json`](../../vim_vsc.json).

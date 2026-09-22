@@ -1,0 +1,40 @@
+# Cursor (Linux). Snapshot of `cursor --list-extensions --show-versions`.
+# Restore:
+#   grep -v '^#' ~/workflow-helper/ubuntu/cursor/extensions.txt | while read -r ext; do
+#     cursor --install-extension "$ext"
+#   done
+# anysphere.* ship with Cursor.
+anthropic.claude-code@2.1.278
+anysphere.cpptools@2.0.2
+anysphere.cursorpyright@1.0.12
+anysphere.remote-containers@1.0.40
+anysphere.remote-ssh@1.1.16
+bierner.markdown-mermaid@1.32.1
+dbtlabsinc.dbt@0.107.8
+eamodio.gitlens@2026.9.190513
+foxundermoon.shell-format@7.2.8
+james-yu.latex-workshop@10.19.0
+leanprover.lean4@0.0.240
+llvm-vs-code-extensions.vscode-clangd@0.6.0
+mkhl.shfmt@1.5.2
+ms-azuretools.vscode-containers@2.5.1
+ms-azuretools.vscode-docker@2.0.0
+ms-pyright.pyright@1.1.414
+ms-python.black-formatter@2026.7.12601004
+ms-python.debugpy@2026.7.12571009
+ms-python.python@2026.7.2026091701
+ms-python.vscode-python-envs@1.37.2026092101
+ms-toolsai.jupyter@2026.6.2026071501
+ms-toolsai.jupyter-renderers@1.3.2025062701
+ms-toolsai.vscode-jupyter-cell-tags@0.1.9
+ms-toolsai.vscode-jupyter-slideshow@0.1.6
+ms-vscode.cmake-tools@1.25.0
+ms-vscode.live-server@0.5.2026091601
+openai.chatgpt@26.908.40401
+redhat.vscode-yaml@1.25.2026091908
+slevesque.vscode-3dviewer@0.2.2
+tamasfe.even-better-toml@0.21.2
+tomoki1207.pdf@1.2.2
+vadimcn.vscode-lldb@1.12.3
+vscodevim.vim@1.32.4
+wesbos.theme-cobalt2@2.5.0

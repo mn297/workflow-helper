@@ -24,9 +24,8 @@ Installs [caveman](https://github.com/JuliusBrussee/caveman), [SimpleEnglish](ht
 
 | Topic | File |
 |---|---|
-| `claude-auto-retry`: install, color patches, mirror via `tmux attach` | [`claude/auto-retry-colors/README.md`](claude/auto-retry-colors/README.md) |
 | tmux config: resize repaint, mouse copy to clipboard | [`ubuntu/tmux.conf`](ubuntu/tmux.conf) |
-| Cursor keys, restore, allowlist | [`ubuntu/cursor/`](ubuntu/cursor/) |
+| Cursor keys, settings, extensions, allowlist | [`ubuntu/cursor/`](ubuntu/cursor/) |
 
 ## Isaac Sim
 
