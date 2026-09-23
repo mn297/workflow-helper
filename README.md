@@ -123,6 +123,7 @@ The first press on an external monitor takes about 3 seconds. The script finds t
 
 | Topic | File |
 |---|---|
+| Desktop on the iGPU, CUDA on the 5070 Ti, VRAM in the top bar | [`ubuntu/gpu.md`](ubuntu/gpu.md) |
 | Power, wake, hibernate | [`ubuntu/power.md`](ubuntu/power.md) |
 | mt7925e S3 resume | [`ubuntu/setup_mt7925e_unbind.sh`](ubuntu/setup_mt7925e_unbind.sh) |
 | Shared bash history (`Ctrl+R`) | [`ubuntu/bash_history.sh`](ubuntu/bash_history.sh) |
