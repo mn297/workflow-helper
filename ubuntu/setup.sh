@@ -17,6 +17,7 @@
 #   ./setup.sh brightness               # brightness keys follow the cursor
 #   KEYS=numpad ./setup.sh brightness   # numpad 8/5, not Fn keys + numpad +/-
 #   STEP=5 ./setup.sh brightness        # 5% per press, not 10%
+#   ./setup.sh astra                    # Astra Monitor: 5070 Ti VRAM in the top bar
 #
 set -uo pipefail
 
@@ -42,9 +43,9 @@ SECTION="${1:-all}"
 run_section() { [ "$SECTION" = all ] || [ "$SECTION" = "$1" ]; }
 
 case "$SECTION" in
-all | apps | scroll | brightness) ;;
+all | apps | scroll | brightness | astra) ;;
 *)
-	echo "Usage: $0 [all|apps|scroll|brightness]" >&2
+	echo "Usage: $0 [all|apps|scroll|brightness|astra]" >&2
 	exit 1
 	;;
 esac
@@ -550,4 +551,16 @@ for the monitor's EDID and caches the bus until reboot. Later presses take
 ~0.3 s. If a monitor never responds, turn on DDC/CI in its on-screen menu.
 EOF
 
+fi
+
+######################################################################## astra
+# RTX 5070 Ti memory in the GNOME top bar. Needs a graphical session.
+if run_section astra; then
+	say "Installing Astra Monitor"
+	if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+		"$HERE/astra-monitor.sh"
+	else
+		echo "no session bus (ssh/tty?), skipping; run it later from a desktop session:"
+		echo "  $HERE/astra-monitor.sh"
+	fi
 fi
