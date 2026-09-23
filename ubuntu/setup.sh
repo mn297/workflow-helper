@@ -15,7 +15,7 @@
 #   SPEED=30 ./setup.sh scroll          # retune the scroll speed
 #   DEVICE="USB OPTICAL MOUSE " ./setup.sh scroll   # one mouse only
 #   ./setup.sh brightness               # brightness keys follow the cursor
-#   KEYS=fn ./setup.sh brightness       # use the Fn keys, not numpad 8/5
+#   KEYS=numpad ./setup.sh brightness   # numpad 8/5, not Fn keys + numpad +/-
 #   STEP=5 ./setup.sh brightness        # 5% per press, not 10%
 #
 set -uo pipefail
@@ -49,14 +49,21 @@ all | apps | scroll | brightness) ;;
 	;;
 esac
 
-KEYS="${KEYS:-numpad}"
-case "$KEYS" in
-numpad | fn) ;;
-*)
-	echo "KEYS must be numpad or fn, got '$KEYS'" >&2
+# Comma-separated key sets for the brightness section.
+KEYS="${KEYS:-fn,plusminus}"
+if [ -z "${KEYS//,/}" ]; then
+	echo "KEYS is empty" >&2
 	exit 1
-	;;
-esac
+fi
+for keyset in ${KEYS//,/ }; do
+	case "$keyset" in
+	fn | plusminus | numpad) ;;
+	*)
+		echo "KEYS takes fn, plusminus, numpad (comma-separated), got '$KEYS'" >&2
+		exit 1
+		;;
+	esac
+done
 
 if ! [[ "${STEP:-10}" =~ ^[1-9][0-9]?$|^100$ ]]; then
 	echo "STEP must be 1..100, got '$STEP'" >&2
@@ -429,31 +436,39 @@ fi
 
 #################################################################### brightness
 # Brightness keys follow the mouse: each press changes the monitor the cursor is
-# on, STEP% (default 10) per press. The laptop panel goes through logind, external monitors
-# through DDC/CI. The logic lives in cursor-brightness.sh; this section installs
-# the tools and binds the keys.
+# on, STEP% (default 10) per press. The laptop panel goes through logind,
+# external monitors through DDC/CI. The logic lives in cursor-brightness.sh;
+# this section installs the tools and binds the keys.
 #
-#   KEYS=numpad (default)  numpad 8 = up, numpad 5 = down
-#   KEYS=fn                the Fn brightness keys, taken away from GNOME
+#   KEYS=fn,plusminus (default)  Fn brightness keys and numpad +/-
+#   KEYS=numpad                  numpad 8 = up, numpad 5 = down
 #
-# xbindkeys binds keycodes, not keysyms, so the NumLock state does not matter
-# (80 = KP_8/KP_Up, 84 = KP_5/KP_Begin). Only one client can grab a key, so
-# KEYS=fn first clears GNOME's own brightness bindings; KEYS=numpad restores
-# them. /etc/xdg/autostart/xbindkeys.desktop starts xbindkeys at login whenever
-# ~/.xbindkeysrc exists. X11 only: Wayland gives no global cursor position.
+# Sets combine with commas. The keys are GNOME custom shortcuts, so the shell
+# owns the grab and redoes it after every keymap change. xbindkeys did not
+# survive that: typing on another keyboard changes the keymap, and its grabs
+# then went silent until it restarted. Numpad 8/5 bind both keysyms of each key
+# (KP_Up and KP_8, KP_Begin and KP_5), so the NumLock state does not matter.
 #
-# Do not seed ~/.xbindkeysrc with `xbindkeys --defaults`: it binds Ctrl+Shift+Q.
+# A key takes one shortcut only, so with fn in KEYS, GNOME's own brightness
+# bindings are cleared; without fn they are restored. gsd-media-keys keeps its
+# old grab until it restarts, so the section restarts it.
+#
+# X11 only: Wayland gives no global cursor position.
 if run_section brightness; then
 
-	case "$KEYS" in
-	numpad) UP_KEY=c:80 DOWN_KEY=c:84 ;;
-	fn) UP_KEY=c:233 DOWN_KEY=c:232 ;;
-	esac
+	BINDINGS=() # "<direction>:<keysym>"
+	for keyset in ${KEYS//,/ }; do
+		case "$keyset" in
+		fn) BINDINGS+=(up:XF86MonBrightnessUp down:XF86MonBrightnessDown) ;;
+		plusminus) BINDINGS+=(up:KP_Add down:KP_Subtract) ;;
+		numpad) BINDINGS+=(up:KP_Up up:KP_8 down:KP_Begin down:KP_5) ;;
+		esac
+	done
 	STEP="${STEP:-10}"
 
-	say "Installing ddcutil, xdotool, xbindkeys"
+	say "Installing ddcutil, xdotool"
 	missing=()
-	for pkg in ddcutil i2c-tools xdotool xbindkeys; do
+	for pkg in ddcutil i2c-tools xdotool; do
 		dpkg -s "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
 	done
 	if [ ${#missing[@]} -gt 0 ]; then
@@ -467,46 +482,66 @@ if run_section brightness; then
 	ddcutil detect --brief
 
 	say "Binding brightness keys ($KEYS)"
+	MEDIA_KEYS=org.gnome.settings-daemon.plugins.media-keys
+	CUSTOM=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings
 	if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v gsettings >/dev/null; then
-		MEDIA_KEYS=org.gnome.settings-daemon.plugins.media-keys
 		for key in screen-brightness-up-static screen-brightness-down-static; do
-			if [ "$KEYS" = fn ]; then
+			if [[ ",$KEYS," == *,fn,* ]]; then
 				gsettings set "$MEDIA_KEYS" "$key" "[]"
 			else
 				gsettings reset "$MEDIA_KEYS" "$key"
 			fi
 		done
+
+		# Keep the user's other custom shortcuts, replace ours.
+		paths=()
+		for p in $(gsettings get "$MEDIA_KEYS" custom-keybindings | grep -o "'[^']*'" | tr -d "'"); do
+			if [[ $p == "$CUSTOM"/workflow-helper-brightness-* ]]; then
+				dconf reset -f "$p"
+			else
+				paths+=("$p")
+			fi
+		done
+		i=0
+		for b in "${BINDINGS[@]}"; do
+			p="$CUSTOM/workflow-helper-brightness-$i/"
+			gsettings set "$MEDIA_KEYS.custom-keybinding:$p" name "Brightness ${b%%:*} (workflow-helper)"
+			gsettings set "$MEDIA_KEYS.custom-keybinding:$p" command "env STEP=$STEP '$HERE/cursor-brightness.sh' ${b%%:*}"
+			gsettings set "$MEDIA_KEYS.custom-keybinding:$p" binding "${b#*:}"
+			paths+=("$p")
+			i=$((i + 1))
+		done
+		list=$(printf "'%s', " "${paths[@]}")
+		gsettings set "$MEDIA_KEYS" custom-keybindings "[${list%, }]"
+
+		# The service unit refuses a manual restart; its target does not.
+		systemctl --user restart org.gnome.SettingsDaemon.MediaKeys.target
 	else
-		echo "no session bus (ssh/tty?), GNOME brightness keys left as they are"
+		echo "no session bus (ssh/tty?): run this section from the desktop session" >&2
 	fi
 
+	# Earlier versions bound the keys with xbindkeys. Remove that block, so one
+	# press does not run the script twice.
 	RC="$HOME/.xbindkeysrc"
-	touch "$RC"
-	sed -i '/^# >>> workflow-helper brightness >>>$/,/^# <<< workflow-helper brightness <<<$/d' "$RC"
-	cat >>"$RC" <<EOF
-# >>> workflow-helper brightness >>>
-# Written by ubuntu/setup.sh brightness; edits inside this block are lost.
-"STEP=$STEP '$HERE/cursor-brightness.sh' up"
-  $UP_KEY
-"STEP=$STEP '$HERE/cursor-brightness.sh' down"
-  $DOWN_KEY
-# <<< workflow-helper brightness <<<
-EOF
+	if [ -f "$RC" ] && grep -q '^# >>> workflow-helper brightness >>>$' "$RC"; then
+		sed -i '/^# >>> workflow-helper brightness >>>$/,/^# <<< workflow-helper brightness <<<$/d' "$RC"
+		pkill -x xbindkeys || true
+		if grep -qvE '^[[:space:]]*(#|$)' "$RC"; then
+			[ -n "${DISPLAY:-}" ] && xbindkeys
+		else
+			rm -f "$RC"
+		fi
+		echo "removed the old xbindkeys binding"
+	fi
 
 	if [ "${XDG_SESSION_TYPE:-}" = wayland ]; then
 		echo "WARNING: Wayland session. Log in with 'Ubuntu on Xorg' for this to work." >&2
-	elif [ -n "${DISPLAY:-}" ]; then
-		pkill -x xbindkeys || true
-		xbindkeys
-		pgrep -x xbindkeys >/dev/null && echo "xbindkeys running"
-	else
-		echo "no X display, xbindkeys starts at next login"
 	fi
 
 	cat <<EOF
 
-Keys         : $KEYS  (up $UP_KEY, down $DOWN_KEY)
-Bindings     : ~/.xbindkeysrc
+Keys         : $KEYS  (${BINDINGS[*]})
+Bindings     : Settings > Keyboard > Custom Shortcuts, "Brightness ... (workflow-helper)"
 Step         : $STEP%  (change: STEP=5 ./setup.sh brightness)
 Try it       : $HERE/cursor-brightness.sh down
 
