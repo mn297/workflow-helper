@@ -95,12 +95,19 @@ input-remapper-gtk                            # GUI
 [`ubuntu/cursor-brightness.sh`](ubuntu/cursor-brightness.sh) changes the brightness of the monitor under the mouse cursor. Each key press moves the brightness 10% up or down. The laptop panel changes through logind. An external monitor changes through DDC/CI, a protocol that lets the computer set monitor controls over the video cable.
 
 ```bash
-./ubuntu/setup.sh brightness            # numpad 8 = up, numpad 5 = down
-KEYS=fn ./ubuntu/setup.sh brightness    # use the Fn brightness keys instead
-STEP=5 ./ubuntu/setup.sh brightness     # 5% per press
+./ubuntu/setup.sh brightness                # Fn brightness keys and numpad +/-
+KEYS=numpad ./ubuntu/setup.sh brightness    # numpad 8 = up, numpad 5 = down
+KEYS=fn ./ubuntu/setup.sh brightness        # Fn brightness keys only
+STEP=5 ./ubuntu/setup.sh brightness         # 5% per press
 ```
 
-The numpad keys work with NumLock on or off. While the binding is active, they do not type 8 or 5. `KEYS=fn` removes the brightness keys from GNOME, and `KEYS=numpad` gives them back to GNOME.
+`KEYS` takes one or more of `fn`, `plusminus` and `numpad`, separated by commas. The numpad keys work with NumLock on or off. While a numpad key is bound, it does not type its character.
+
+The keys are GNOME custom shortcuts. You can see them in Settings > Keyboard > Custom Shortcuts, as "Brightness up (workflow-helper)" and "Brightness down (workflow-helper)". GNOME keeps them after a reboot.
+
+If `KEYS` includes `fn`, the setup removes the brightness keys from the GNOME brightness control. If it does not, the setup gives them back. In both cases, the setup restarts gsd-media-keys, the GNOME service for keyboard shortcuts. Without the restart, the service keeps its old brightness shortcut, and the new shortcut cannot use the key.
+
+Earlier versions used xbindkeys. xbindkeys lost its keys after each keymap change, for example when you typed on a different keyboard. The setup removes the old xbindkeys binding.
 
 The feature works only in an X11 session ("Ubuntu on Xorg"). Wayland does not give the cursor position to other programs.
 
@@ -109,9 +116,10 @@ The first press on an external monitor takes about 3 seconds. The script finds t
 | Problem | Fix |
 |---|---|
 | External monitor does not change | Turn on DDC/CI in the menu of the monitor. Then run `ddcutil detect`. |
-| No key does anything | Make sure that xbindkeys runs: `pgrep -x xbindkeys`. If it does not, run `xbindkeys`. |
+| No key does anything | Make sure that the shortcuts exist in Settings > Keyboard > Custom Shortcuts. If they do not, run `./ubuntu/setup.sh brightness` again. |
+| Fn keys change only the laptop panel, not the monitor under the cursor | The GNOME brightness control has the keys again. Run `./ubuntu/setup.sh brightness` again. It restarts gsd-media-keys. |
 | Keys do nothing on the lock screen | This is expected. The GNOME lock screen takes all keys. |
-| Disable | Delete the `workflow-helper brightness` block in `~/.xbindkeysrc`. Then run `pkill -x xbindkeys; xbindkeys`. |
+| Disable | Delete the "Brightness ... (workflow-helper)" shortcuts in Settings > Keyboard > Custom Shortcuts. |
 
 | Topic | File |
 |---|---|
