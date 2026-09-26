@@ -57,3 +57,38 @@ defaults write com.apple.finder NSUserKeyEquivalents -dict-add "Open in Terminal
 ```
 
 VS Code equivalent (no shortcut bound): [`Open in Visual Studio Code.workflow`](Open%20in%20Visual%20Studio%20Code.workflow).
+
+## LaTeX
+
+Full TeX Live (no TeXShop), about 5 GB. Packages are already included. `latexmk` builds with `pdflatex`. Aux files go in `build/` so OneDrive does not sync them. PDF is `build/<name>.pdf`. Quit Cursor fully and reopen it after the install so it sees `/Library/TeX/texbin`.
+
+```bash
+brew install --cask mactex-no-gui
+
+grep -q '/Library/TeX/texbin' ~/.zshrc || echo 'export PATH="/Library/TeX/texbin:$PATH"' >> ~/.zshrc
+export PATH="/Library/TeX/texbin:$PATH"
+hash -r
+
+which pdflatex latexmk
+pdflatex --version | head -1
+
+cursor --install-extension James-Yu.latex-workshop
+```
+
+From the directory that contains the `.tex` file (for ME 641 notes, `notes/`):
+
+```bash
+cp ~/workflow-helper/mac/latex/.latexmkrc .latexmkrc
+mkdir -p .vscode
+cp ~/workflow-helper/mac/latex/settings.json .vscode/settings.json
+
+latexmk -pdf parametric_models_summary.tex
+open build/parametric_models_summary.pdf
+```
+
+Saving the `.tex` file in Cursor rebuilds the PDF in an editor tab. Only if a later package is missing:
+
+```bash
+sudo tlmgr update --self
+sudo tlmgr install packagename
+```
