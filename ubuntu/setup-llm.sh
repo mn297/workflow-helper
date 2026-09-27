@@ -243,7 +243,7 @@ if run_section skills; then
 			fi
 		done
 
-		say "Linking repo docstring skills"
+		say "Linking repo skills"
 		bash "$REPO/skills/install.sh"
 
 		say "Installing ctx7 CLI"
