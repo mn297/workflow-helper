@@ -78,9 +78,29 @@ behind each one, so a rule is not dropped as unexplained.
   of the script, which is the VS Code default.
 - Chapter 10 cited line numbers inside `anim10_geodesic.py`. The conversion
   moved every line. After any change to a script, grep the chapters for
-  citations into `exercises/`.
+  citations into `code-notebook/`.
 - The assert counter matched `check_numbers()` as a check and missed the
   exact-text helper `printed(`. Count the real helpers of the primer.
 - Old scripts stated some exercise answers only in a docstring, and one
   docstring claimed an assert that did not exist. A converted exercise cell
   asserts the answer, or it points at the step that does.
+
+## Fourth run: simple copies (2026-10-04)
+
+- The user found the cell lessons hard to read: check cells and notes cut
+  the logic into small pieces. `build_simple.py` now writes a plain copy of
+  each lesson with one comment banner per step
+  (`references/interactive-exercises.md`, section "Simple copies").
+- Five of 22 Lie lessons failed as plain copies at first. A check cell
+  computed a value, such as `K1` or `Rm`, that a later step used. The script
+  now keeps such a statement. Its `--check` runs each lesson and its copy and
+  compares the printed lines.
+- A measurement script printed `ms_per_step` as a bare number. Two runs
+  print other times, so the simple-copy test failed. Times now carry the unit
+  `ms` or `s`, and both tests ignore them.
+- Twelve particle-filter lessons set a stdout tee in the setup cell for
+  their text checks. Each simple copy then began with 20 lines of tee code.
+  Code that only the checks use now goes into a check cell.
+- The user then asked for two sibling folders instead of `exercises/` and
+  `exercises/clean/`: `code-notebook/` for the cell lessons and
+  `code-simple/` for the copies.

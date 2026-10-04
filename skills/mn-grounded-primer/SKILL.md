@@ -75,7 +75,8 @@ anything.
   01-<slug>.md ... NN-<slug>.md
   resources.md            verified links per chapter, one-week and one-month plans, list of downloaded files
   refs/                   open-access PDFs only, slug names, each over 50 KB and a real PDF
-  exercises/              exNN_<slug>.py per chapter snippet as an interactive lesson with # %% cells, README.md, run_all.sh, run_cells.py, out/ for generated GIFs
+  code-notebook/          exNN_<slug>.py per chapter snippet as an interactive lesson with # %% cells, README.md, run_all.sh, run_cells.py, out/ for generated GIFs
+  code-simple/            generated, next to code-notebook/: each lesson as a plain script with one comment banner per step and no checks, plus build_simple.py (copy of references/build_simple.py)
   upstream/               shallow clones of libraries the anchor does not contain, gitignored, hashes in README
   viz/<name>.html         the course visualizer: one interactive instrument per chapter, also published as an Artifact
   viz/build_reader.py     copy of references/build_reader.py; writes index.html from the markdown, --check tests that it is current
@@ -134,19 +135,21 @@ each failure from earlier runs and the rule it produced.
      README table exists. The researcher can still run.
 3. Verifier, after all writers report. One fresh agent with
    `model: "opus"` because it writes scripts (forks ignore the model
-   override). It extracts snippets to `exercises/` as interactive lessons
+   override). It extracts snippets to `code-notebook/` as interactive lessons
    (`references/interactive-exercises.md`), runs them, fixes text or
    script where they disagree, reconciles the cross-chapter items you list
    from the writers' reports, re-greps every `file:line`, builds the
-   glossary, updates `README.md`, and runs the simple-english lint.
+   glossary, updates `README.md`, and runs the simple-english lint. Then it
+   writes the simple copies (`references/interactive-exercises.md`, section
+   "Simple copies").
    Completion: `run_all.sh --cells` exits 0, its failure exit is tested,
-   and the report lists every text fix.
+   `build_simple.py --check` exits 0, and the report lists every text fix.
 4. Reviewer, after the verifier and the researcher. One fresh `opus` agent,
    adversarial, four axes: re-derive the math, check fidelity to the anchor,
    check claims about other tools against primary sources, read as the
    intended reader. It fixes verifiable errors and lists larger suggestions
-   without applying them. Completion: `exercises/run_all.sh --cells` exits
-   0 after its last fix.
+   without applying them. Completion: `code-notebook/run_all.sh --cells` and
+   `code-simple/build_simple.py --check` exit 0 after its last fix.
 5. Visualizer, after the reviewer, by you. One interactive page with one
    instrument per chapter, whose default settings reproduce the chapter's
    worked numbers. Follow `references/visualizer.md`. Render the page only
@@ -156,7 +159,8 @@ each failure from earlier runs and the rule it produced.
    `viz/`, and `README.md` names both.
    Then build the reader with `references/reader.md`: a generated
    `index.html` that renders every markdown file with its math, and links
-   each chapter to its station and back. Completion: `build_reader.py
+   each chapter to its station and back. It also shows each simple copy, one
+   block per step. Completion: `build_reader.py
    --check` exits 0, every page renders all of its math in the same headless
    Chrome, and `README.md` says how to rebuild it.
 
@@ -203,9 +207,10 @@ During waves 2 to 4, two events need a message, not an edit:
 ## 6. Final report to the user
 
 Five to ten lines. Any bug found in the anchor, first. Where the folder is
-and how to go through it: per chapter, read, redo the derivation on paper,
-step through its script cell by cell in the editor (or run it whole), open
-the `file:line`, do the exercises. How to open the reader
+and how to go through it. Per chapter: read it, redo the derivation on paper,
+and read the simple copy in `code-simple/` for the logic. Then step
+through the lesson cell by cell in the editor (or run it whole), open the
+`file:line`, and do the exercises. How to open the reader
 (`<folder>/run.sh`, then the URL it prints) and the visualizer link.
 What the reviewer changed, most serious first. Open items the reviewer did
 not apply. Total size of `refs/`. Nothing else.

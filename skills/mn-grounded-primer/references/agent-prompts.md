@@ -36,7 +36,7 @@ Placeholders used below:
 - `<SKILL>`: the absolute path of this skill folder, the one that holds
   `SKILL.md`.
 
-`NN` and `<slug>` inside a file pattern, as in `exercises/exNN_<slug>.py`,
+`NN` and `<slug>` inside a file pattern, as in `code-notebook/exNN_<slug>.py`,
 stay as written. The agent applies them to each chapter.
 
 ## 1. Chapter writer (subagent_type: "fork", two or three chapters each)
@@ -143,23 +143,27 @@ Writing rules for prose you add: simple English, sentences under 25 words,
 active voice, no contractions, no em-dashes, define a term at first use.
 
 Tasks, in order:
-1. Exercises. Build each exercises/exNN_<slug>.py as an interactive lesson.
+1. Exercises. Build each code-notebook/exNN_<slug>.py as an interactive lesson.
    Follow <SKILL>/references/interactive-exercises.md exactly: # %% cells,
    one markdown cell, one code cell and one check cell per snippet step,
    snippet lines verbatim, every cell safe to run twice. Start each file
    with a two-line docstring (chapter, section, numbers it must print).
-   Copy <SKILL>/references/run_cells.py into exercises/ unchanged. Run every
+   Copy <SKILL>/references/run_cells.py into code-notebook/ unchanged. Run every
    script. Where script and text disagree, re-derive to find which is right,
    fix the other, record the fix. Make each script assert the numbers the
    chapter states, so a later drift fails loudly. Assert round-off values
    (about 1e-15) as "< 1e-12", never as exact. Where a chapter says an anchor
    function equals a formula, import the anchor and assert it. No absolute
-   paths and no sys.path lines in any script. Write exercises/README.md and
+   paths and no sys.path lines in any script. Write code-notebook/README.md and
    run_all.sh. run_all.sh finds the environment relative to its own
    location, stops with a clear message when the shell environment is
    contaminated (for example ROS on PYTHONPATH), and exits nonzero on any
    failure. With --cells it then runs run_cells.py. Test the failure exit.
-   Add the section "Run a lesson cell by cell" to exercises/README.md.
+   Add the section "Run a lesson cell by cell" to code-notebook/README.md.
+   Then write the simple copies: section "Simple copies" of the same file.
+   Copy <SKILL>/references/build_simple.py to code-simple/ unchanged, run
+   it, and make build_simple.py --check exit 0. Add the section "Read a
+   lesson as a plain script" to code-notebook/README.md.
 2. Cross-chapter consistency. Read all chapters. Then:
    a. Canonical forms: <CANONICAL FORMS>. Make every chapter match.
    b. Items from the writers' "claims to check" lists: <paste them>.
@@ -173,13 +177,13 @@ Tasks, in order:
    with the defining chapter. Add a one-sentence definition in the chapter
    where a term is used but never defined.
 4. README. Confirm every chapter file name in the table exists. Add the
-   pointer to exercises/README.md and run_all.sh.
+   pointer to code-notebook/README.md and run_all.sh.
 5. Lint. Find the simple-english lint script
    (`find ~/.claude -name ste_lint.py`) and fix prose hits (sentences over
    25 words, contractions, "should", "may"). Ignore hits inside math or
    code.
 
-Report back: scripts with pass or fail in both modes, every text fix (chapter, section,
+Report back: scripts with pass or fail in both modes and in the simple-copy test, every text fix (chapter, section,
 old, new, why), how many file:line references were off, the glossary count,
 anything unresolved.
 ```
@@ -188,7 +192,7 @@ anything unresolved.
 
 ```
 You are the final adversarial reviewer of <FOLDER>. Review README.md,
-00-glossary.md, every chapter, resources.md, exercises/. Do not modify
+00-glossary.md, every chapter, resources.md, code-notebook/. Do not modify
 anything outside <FOLDER>. Do not touch refs/.
 
 Purpose of the primer: <one paragraph: topic, anchor, reader, the specific
@@ -217,10 +221,12 @@ D. Pedagogy. Read as the intended reader. Terms defined before use, no
 Writing rules for prose you add: simple English, sentences under 25 words,
 active voice, no contractions, no em-dashes.
 
-Finish by running exercises/run_all.sh --cells.
+Finish by running code-notebook/run_all.sh --cells, then
+code-simple/build_simple.py and code-simple/build_simple.py --check.
 
 Report back, in order: (1) verdict in two sentences; (2) errors fixed,
 chapter + section + was + now, most serious first; (3) inferences relabeled;
 (4) pedagogy fixes applied; (5) larger suggestions not applied; (6) what you
-could not verify and what it would take; (7) run_all.sh --cells result.
+could not verify and what it would take; (7) run_all.sh --cells and
+build_simple.py --check results.
 ```

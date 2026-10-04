@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rebuild the reader, then serve it on http://127.0.0.1 and print its URL.
+# Rebuild the simple scripts and the reader, then serve it on http://127.0.0.1 and print its URL.
 # Over http the browser keeps one zoom level for every lesson and the instruments.
 # Opened as a file (file://), Chrome keeps a separate zoom for each lesson URL.
 # Usage: <folder>/run.sh [--open] [port]    port defaults to $PORT or 8765
@@ -26,6 +26,8 @@ if ! python3 -c "$probe" "$port" 2>/dev/null; then
   exit 1
 fi
 
+# The simple scripts first, because the reader embeds them.
+if [ -f "$HERE/code-simple/build_simple.py" ]; then python3 "$HERE/code-simple/build_simple.py"; fi
 python3 "$HERE/viz/build_reader.py"
 echo "Reader: $url"
 echo "Serving $ROOT on 127.0.0.1 only. Stop with Ctrl+C."

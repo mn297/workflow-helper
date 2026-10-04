@@ -2,14 +2,14 @@
 
 A cell starts at a line that begins with "# %%". Markdown cells ("# %% [markdown]") are
 skipped. Each code cell runs twice in a row, and the second run must succeed and print the
-same text as the first, except times in seconds. So a cell that changes a name from an earlier
-cell fails here. The kernel starts in this folder, has no __file__ and has kernel arguments
-in sys.argv, as in the VS Code Interactive Window. Exit status 0 if every script passes, 1 if
-one or more fail.
+same text as the first, except times (a number with the unit s or ms). So a cell that
+changes a name from an earlier cell fails here. The kernel starts in this folder, has no
+__file__ and has kernel arguments in sys.argv, as in the VS Code Interactive Window. Exit
+status 0 if every script passes, 1 if one or more fail.
 
 Run from the workspace root:
-    .venv/bin/python <folder>/exercises/run_cells.py                  # every script
-    .venv/bin/python <folder>/exercises/run_cells.py ex03_<slug>.py   # one script
+    .venv/bin/python <folder>/code-notebook/run_cells.py                  # every script
+    .venv/bin/python <folder>/code-notebook/run_cells.py ex03_<slug>.py   # one script
 """
 import pathlib
 import re
@@ -19,7 +19,7 @@ from jupyter_client.manager import start_new_kernel
 
 HERE = pathlib.Path(__file__).resolve().parent
 MARKER = re.compile(r"^# %%(.*)$")
-SECONDS = re.compile(r"\d+(\.\d+)? s\b")
+SECONDS = re.compile(r"\d+(\.\d+)? m?s\b")
 
 
 def cells(path):

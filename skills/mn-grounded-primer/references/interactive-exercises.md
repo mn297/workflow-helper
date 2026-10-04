@@ -7,7 +7,7 @@ kernel. Lines that start with `# %%` mark the cells. VS Code (Run Cell,
 Interactive Window), Spyder, PyCharm and Jupytext read these markers. Both
 modes print the same numbers. The reader never gets a `.ipynb` file.
 
-Instance: `/home/john/practice_kinematics/tutorial-lie-algebra/exercises/`.
+Instance: `/home/john/practice_kinematics/tutorial-lie-algebra/code-notebook/`.
 `ex03_exp_log_so3.py` is the model file. Read it before writing the first
 script of a new primer.
 
@@ -90,6 +90,15 @@ script of a new primer.
   ```
 - The workspace environment needs `ipykernel`. If it is missing, add it in
   wave 0.
+- Put code that only the check cells use into a `# %% check` cell. An
+  example is a tee of `sys.stdout` that keeps the printed text for a check.
+  A helper function can stay in the setup cell, because the simple copy drops
+  a helper that no kept line uses.
+- Print a wall-clock time with its unit, as `12.3 ms` or `0.4 s`. Both tests
+  ignore such a number. The simple-copy test fails on a time without a unit,
+  because the lesson and its copy run at different times.
+- An import that runs only for its side effect carries a `# noqa` comment.
+  The simple copy then keeps it.
 
 ## Prose in markdown cells
 
@@ -101,10 +110,10 @@ point at the section.
 
 ## The cell-mode test
 
-Copy `references/run_cells.py` into `exercises/` unchanged. It runs each code
-cell twice in a fresh Jupyter kernel that starts in `exercises/`. The second
-run must succeed and print the same text as the first, except times in
-seconds. The kernel
+Copy `references/run_cells.py` into `code-notebook/` unchanged. It runs each code
+cell twice in a fresh Jupyter kernel that starts in `code-notebook/`. The second
+run must succeed and print the same text as the first, except times (a
+number with the unit s or ms). The kernel
 has no `__file__` and has kernel arguments in `sys.argv`, as in the VS Code
 Interactive Window. It fails a script that needs `__file__` or a flag, and a script without
 cells. A cell that changes a name from an earlier cell fails in one of two
@@ -119,7 +128,7 @@ script, in order:
 
 ```python
 import pathlib, re
-for script in sorted(pathlib.Path("exercises").glob("ex[0-9][0-9]_*.py")):
+for script in sorted(pathlib.Path("code-notebook").glob("ex[0-9][0-9]_*.py")):
     chapter = next(pathlib.Path(".").glob(f"{script.name[2:4]}-*.md")).read_text()
     block = re.search(r"^## 6\..*?```python\n(.*?)```", chapter, flags=re.S | re.M).group(1)
     lines = iter(l.rstrip() for l in script.read_text().splitlines())
@@ -135,13 +144,63 @@ A kernel adds its working folder to `sys.path`. If that folder holds a
 directory with the name of an installed package, the import picks the
 directory. In the Lie primer, a kernel started in the workspace root found
 the Drake submodule `./drake/`, and `import pydrake.multibody.plant` failed
-with `ImportError: initialization failed`. The exercises README tells the
+with `ImportError: initialization failed`. The code-notebook README tells the
 reader to keep the kernel in the folder of the script.
 
-## Exercises README
+## Simple copies
 
-Add a section "Run a lesson cell by cell" to `exercises/README.md`. It
+The check cells, the cell notes and the markdown cells cut a lesson into
+small pieces, so the logic is hard to read. The simple copy is the same
+script without them, one comment banner per step. A script writes it, and
+nobody edits it by hand.
+
+Copy `references/build_simple.py` to `code-simple/build_simple.py`
+unchanged. After the lessons pass, run it from the workspace root:
+
+```
+.venv/bin/python <folder>/code-simple/build_simple.py          # write the copies
+.venv/bin/python <folder>/code-simple/build_simple.py --check  # test them
+```
+
+A lesson is a `.py` file in `code-notebook/` whose first line is `# %%`. Its
+copy is `code-simple/<same name>.py`. The copy keeps every code cell in
+order. Each markdown heading becomes a banner: a rule of `=`, the heading
+and a rule. The notes of the cell follow the banner as comments. The copy
+drops these parts:
+
+- the cell markers and the title cell,
+- the check cells, except a statement that sets a name that a later code
+  cell reads,
+- `Try:` lines and note lines that mention a cell or the kernel,
+- `if "ipykernel" in sys.modules:` blocks and the last
+  `numbers asserted` print,
+- setup imports and helpers that no kept line uses, and the docstring after
+  its first paragraph.
+
+The two folders are siblings. In the copy, the canonical `HERE` line
+points at `code-notebook/`, so paths that start at `HERE` still resolve.
+Any other use of `__file__` stops the script with a message.
+
+If a copy is stale, `--check` exits 1. Otherwise it runs each lesson and
+its copy from `code-notebook/`, four lessons at a time. Each copy must exit
+0. Its printed lines must appear, in the same order, in the output of the lesson.
+The script keeps a check-cell line that sets a name a later cell reads. It
+also keeps one that fills such a list with `append`. It does not see other
+changes in place, such as a helper call that edits an array. The test then fails.
+Move that line from the check cell into the code cell above it.
+
+`run.sh` of the reader runs `build_simple.py` before it builds `index.html`.
+After a lesson edit outside `run.sh`, run `build_simple.py` again.
+
+## Notebook README
+
+Add a section "Run a lesson cell by cell" to `code-notebook/README.md`. It
 names the three cell kinds and the check-cell rule. It gives the VS Code
 steps: select the interpreter, press Shift+Enter, run from the top. It tells
 the reader to keep the kernel in the folder of the script and to start the
 editor from a shell without ROS. It ends with the two test commands.
+
+Add a section "Read a lesson as a plain script" after it. It says what a
+simple copy holds and what it leaves out. It says that `build_simple.py`
+writes the copy, and that the reader edits the lesson, never the copy. It ends with the two
+commands of section "Simple copies".

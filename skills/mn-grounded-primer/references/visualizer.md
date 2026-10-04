@@ -11,7 +11,7 @@ https://claude.ai/artifact/1m5GeQmF5JgPczKXFECJAh.
 ## Steps
 
 1. Collect the worked examples. For each chapter, read the docstring and the
-   asserts of `exercises/exNN_*.py`. Write down the inputs and the numbers the
+   asserts of `code-notebook/exNN_*.py`. Write down the inputs and the numbers the
    script asserts. These become the instrument's default settings and the
    node checks. Completion: every chapter has its inputs and expected numbers.
 2. Design one instrument per chapter. Each one shows the chapter's object

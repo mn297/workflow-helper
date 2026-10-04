@@ -35,7 +35,7 @@ with sources. Mark an inference as an inference.
 One fenced numpy block under 50 lines. It prints the worked-example numbers
 from section 3 and nothing else. Write it as short steps, one blank line
 apart, each step printing its own numbers. The verifier splits it, line for
-line, into the cells of the interactive lesson `exercises/exNN_<slug>.py`,
+line, into the cells of the interactive lesson `code-notebook/exNN_<slug>.py`,
 so it must run standalone.
 
 ## 7. Exercises

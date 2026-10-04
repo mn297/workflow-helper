@@ -1,9 +1,11 @@
 """Bake the primer's markdown into one reader page, index.html, at the primer root.
 
-The page has a landing view (chapter cards, a link to the instruments) and a
+The page has a landing view (chapter cards, a link to the instruments), a
 lesson view (left panel of lessons, rendered markdown with MathJax, a link to
-the chapter's station in viz/). The markdown is embedded as JSON, so the page
-opens straight from disk with no server. Rerun this after any chapter edit.
+the chapter's station in viz/) and a code view of each simple script in
+code-simple/, one block per step. The markdown and the scripts are
+embedded as JSON, so the page opens straight from disk with no server. Rerun
+this after any chapter or script edit.
 
 Run from the workspace root, with <folder> the primer folder:
     .venv/bin/python <folder>/viz/build_reader.py          # write <folder>/index.html
@@ -17,7 +19,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "index.html"
-EXTRAS = [("plan", "README.md", "Course plan"), ("exercises", "exercises/README.md", "Exercises"),
+EXTRAS = [("plan", "README.md", "Course plan"), ("notebook", "code-notebook/README.md", "Notebook code"),
           ("resources", "resources.md", "Resources")]
 
 
@@ -76,9 +78,15 @@ def collect():
                          "title": label, "question": "", "time": "", "md": md})
     for d in docs:
         d["codeLinks"] = code_links(d["base"], d["md"])
+    code = []
+    for path in sorted((ROOT / "code-simple").glob("*.py")):
+        if path.name != "build_simple.py":
+            m = re.match(r"[a-z]+(\d\d)_", path.name)
+            code.append({"key": "k" + path.stem, "chapter": m.group(1) if m else "", "title": path.name,
+                         "file": f"code-simple/{path.name}", "lesson": f"code-notebook/{path.name}", "text": path.read_text()})
     viz = sorted(p for p in (ROOT / "viz").glob("*.html"))
     return {"title": title_of(readme, ROOT.name), "intro": intro_of(readme), "folder": ROOT.name,
-            "viz": f"viz/{viz[0].name}" if viz else "", "docs": docs}
+            "viz": f"viz/{viz[0].name}" if viz else "", "docs": docs, "code": code}
 
 
 def build():
@@ -101,16 +109,17 @@ TEMPLATE = r"""<!doctype html>
 :root{
   --bg:#f3f4f1; --panel:#fbfbf9; --ink:#1c2228; --muted:#5b6670; --rule:#d6dad8; --grid:#e6e9e6;
   --accent:#245d86; --soft:#e9eef1; --codebg:#eef0ec;
+  --kw:#7a3e9d; --str:#2f6f3e; --num:#9a5b13;
   --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#11161a; --panel:#171d22; --ink:#e2e7ea; --muted:#93a0a9; --rule:#2b343b; --grid:#202930;
-  --accent:#73b2df; --soft:#1d262d; --codebg:#1b2228; color-scheme:dark}}
+  --accent:#73b2df; --soft:#1d262d; --codebg:#1b2228; --kw:#c79bea; --str:#8fcf9b; --num:#e3b268; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#11161a; --panel:#171d22; --ink:#e2e7ea; --muted:#93a0a9; --rule:#2b343b; --grid:#202930;
-  --accent:#73b2df; --soft:#1d262d; --codebg:#1b2228; color-scheme:dark}
+  --accent:#73b2df; --soft:#1d262d; --codebg:#1b2228; --kw:#c79bea; --str:#8fcf9b; --num:#e3b268; color-scheme:dark}
 *{box-sizing:border-box}
 html{scroll-padding-top:16px}
 body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);margin:0;padding:20px 16px 48px}
@@ -139,7 +148,8 @@ main{min-width:0}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .btn:hover{border-color:var(--accent)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.card{display:grid;gap:6px;align-content:start;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;color:var(--ink);text-decoration:none}
+.grid.wide{grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr))}
+.card{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;align-content:start;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;color:var(--ink);text-decoration:none}
 .card:hover{border-color:var(--accent)}
 .card .top{display:flex;justify-content:space-between;gap:8px;font:500 12px var(--mono);color:var(--muted)}
 .card h3{font:600 1.05rem/1.25 var(--display);margin:0;text-wrap:balance}
@@ -157,7 +167,7 @@ article h3{font:600 1.15rem/1.25 var(--display);margin:1.4rem 0 .4rem}
 article p,article li{max-width:80ch}
 article code{font:.88em var(--mono);background:var(--codebg);padding:.08em .3em;border-radius:3px;overflow-wrap:anywhere}
 article a code{color:var(--accent)}
-article pre{background:var(--codebg);border-radius:5px;padding:10px 12px;overflow-x:auto;max-width:none}
+article pre{background:var(--codebg);border-radius:5px;padding:10px 12px;overflow-x:auto;max-width:none;font-size:13px;line-height:1.5}
 article pre code{background:none;padding:0;font-size:13px;line-height:1.5;overflow-wrap:normal}
 article table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;font-size:14px;margin:1rem 0}
 article th,article td{border:1px solid var(--rule);padding:5px 8px;vertical-align:top;text-align:left}
@@ -172,9 +182,16 @@ mjx-container[jax="SVG"]>svg{overflow:visible}
 .toc a:hover{color:var(--ink);border-left-color:var(--accent)}
 .toc a.h3{padding-left:18px}
 .toc code{font:.95em var(--mono)}
-.card code{font:.9em var(--mono)}
+.card code{font:.9em var(--mono);overflow-wrap:anywhere}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+article pre.phase{margin:14px 0}
+.hljs-comment,.hljs-quote{color:var(--muted);font-style:italic}
+.hljs-keyword,.hljs-built_in,.hljs-literal{color:var(--kw)}
+.hljs-string{color:var(--str)}
+.hljs-number{color:var(--num)}
+.hljs-title{color:var(--accent)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin-top:16px}
-.pager a{flex:1 1 0;max-width:48%}
+.pager a{flex:1 1 0;max-width:48%;overflow-wrap:anywhere}
 .pager .next{text-align:right;margin-left:auto}
 footer{color:var(--muted);font-size:13px;margin-top:2rem;max-width:80ch}
 </style>
@@ -194,11 +211,13 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/18.0.14/lib/marked.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.js"></script>
 <script>
 const DATA = JSON.parse(document.getElementById("data").textContent);
 const DOCS = DATA.docs, BY = Object.fromEntries(DOCS.map(d => [d.key, d]));
 const BYFILE = Object.fromEntries(DOCS.map(d => [d.file, d]));
+const CODE = DATA.code, BYCODE = Object.fromEntries(CODE.map(c => [c.key, c]));
 const $ = id => document.getElementById(id);
 let mathReady = false;
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -269,6 +288,7 @@ function navHTML(current) {
   h += item("home", "⌂", "Home");
   h += `<div class="navhead">Chapters</div>` + DOCS.filter(d => d.num).map(d => item(d.key, d.num, d.title)).join("");
   h += `<div class="navhead">Course</div>` + DOCS.filter(d => !d.num).map(d => item(d.key, "·", d.title)).join("");
+  if (CODE.length) h += item("code", "·", "Simple code");
   if (DATA.viz) h += `<div class="navhead">Interactive</div><a class="out" href="${DATA.viz}"><span class="n">▶</span><span>Instruments</span></a>`;
   return h + "</div>";
 }
@@ -290,7 +310,7 @@ function showHome() {
     <div class="section-head">Chapters</div>
     <div class="grid">${chapters.map(card).join("")}</div>
     <div class="section-head">Course material</div>
-    <div class="grid">${DOCS.filter(d => !d.num).map(card).join("")}</div>
+    <div class="grid">${DOCS.filter(d => !d.num).map(card).join("")}${CODE.length ? `<a class="card" href="#code"><div class="top"><span>Course</span><span>${CODE.length} scripts</span></div><h3>Simple code</h3><p>Each exercise script as a plain file: one comment banner per step, no cells and no checks.</p></a>` : ""}</div>
     <footer>Generated from the markdown files by <code>viz/build_reader.py</code>. Run it again after a chapter changes. Math renders with MathJax and markdown with marked, both from a CDN.</footer>
   </section>`;
   $("intro").innerHTML = marked.parseInline(DATA.intro);
@@ -298,10 +318,11 @@ function showHome() {
 function showDoc(doc) {
   store.set("reader:last", doc.key);
   const order = DOCS, i = order.indexOf(doc), prev = order[i - 1], next = order[i + 1];
-  const viz = vizLink(doc);
+  const viz = vizLink(doc), code = doc.num ? CODE.filter(c => c.chapter === doc.num) : [];
   $("main").innerHTML = `<div class="lesson"><div>
       <div class="bar"><span class="eyebrow">${doc.num ? "Chapter " + doc.num : "Course"} · ${esc(doc.file)}</span>
-        ${viz ? `<a class="btn" href="${viz}">Open this chapter's instrument</a>` : ""}</div>
+        <span class="btns">${code.map(c => `<a class="btn" href="#${c.key}">Simple code: ${esc(c.title)}</a>`).join("")}
+        ${viz ? `<a class="btn" href="${viz}">Open this chapter's instrument</a>` : ""}</span></div>
       <article id="article">${renderMarkdown(doc.md)}</article>
       <div class="pager">${prev ? `<a class="btn" href="#${prev.key}">← ${esc(prev.title)}</a>` : ""}${next ? `<a class="btn next" href="#${next.key}">${esc(next.title)} →</a>` : ""}</div>
     </div><aside class="toc" id="toc" aria-label="On this page"></aside></div>`;
@@ -315,10 +336,50 @@ function showDoc(doc) {
   typesetMath();
   window.scrollTo(0, 0);
 }
+// Simple scripts: split at the step banners (a "# ====" rule, a title line, a rule) into one block per step.
+function phases(text) {
+  const lines = text.replace(/\n+$/, "").split("\n"), out = [{ title: "Setup", lines: [] }];
+  lines.forEach((line, i) => {
+    if (line.startsWith("# ====") && (lines[i + 2] || "").startsWith("# ====") && i > 0 && !lines[i - 1].startsWith("# ====")) {
+      out.push({ title: lines[i + 1].replace(/^# /, ""), lines: [] });
+    }
+    out[out.length - 1].lines.push(line);
+  });
+  return out.map(p => ({ title: p.title, text: p.lines.join("\n").replace(/^\n+|\n+$/g, "") })).filter(p => p.text);
+}
+function summaryOf(c) { const m = /"{3}(.*)/.exec(c.text); return m ? m[1].replace(/"{3}$/, "") : ""; }
+function chapterName(num) { const d = BY["c" + num]; return d ? `Chapter ${num}. ${d.title}` : `Chapter ${num}`; }
+function showCodeIndex() {
+  const groups = [...new Set(CODE.map(c => c.chapter))];
+  const card = c => `<a class="card" href="#${c.key}"><div class="top"><span>${c.chapter ? "Chapter " + c.chapter : "Script"}</span></div><h3><code>${esc(c.title)}</code></h3><p>${esc(summaryOf(c))}</p></a>`;
+  $("main").innerHTML = `<section class="home">
+    <div class="eyebrow">${esc(DATA.folder)} · code-simple/</div>
+    <h1>Simple code</h1>
+    <p class="intro">Each exercise script as a plain Python file. A comment banner starts each step, and the notes of the step follow it as comments. The check cells and the cell markers are gone. <code>code-simple/build_simple.py</code> writes these files from the lessons in <code>code-notebook/</code>.</p>
+    ${groups.map(g => `<div class="section-head">${g ? esc(chapterName(g)) : "Other scripts"}</div><div class="grid wide">${CODE.filter(c => c.chapter === g).map(card).join("")}</div>`).join("")}
+  </section>`;
+}
+function showCode(c) {
+  const i = CODE.indexOf(c), prev = CODE[i - 1], next = CODE[i + 1], ps = phases(c.text);
+  $("main").innerHTML = `<div class="lesson"><div>
+      <div class="bar"><span class="eyebrow">${c.chapter ? "Chapter " + c.chapter : "Script"} · ${esc(c.file)}</span>
+        <span class="btns">${BY["c" + c.chapter] ? `<a class="btn" href="#c${c.chapter}">Read chapter ${c.chapter}</a>` : ""}
+        <a class="btn" href="${esc(c.lesson)}">Notebook version</a></span></div>
+      <article id="article">${ps.map((p, k) => `<pre class="phase" id="phase-${k}"><code class="language-python">${esc(p.text)}</code></pre>`).join("")}</article>
+      <div class="pager">${prev ? `<a class="btn" href="#${prev.key}">← ${esc(prev.title)}</a>` : ""}${next ? `<a class="btn next" href="#${next.key}">${esc(next.title)} →</a>` : ""}</div>
+    </div><aside class="toc" id="toc" aria-label="Steps"></aside></div>`;
+  if (window.hljs) $("article").querySelectorAll("pre code").forEach(el => hljs.highlightElement(el));
+  $("toc").innerHTML = `<div class="eyebrow" style="padding:0 8px 8px">Steps</div>` +
+    ps.map((p, k) => `<a href="#phase-${k}">${esc(p.title)}</a>`).join("");
+  $("toc").querySelectorAll("a").forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById(a.getAttribute("href").slice(1)).scrollIntoView(); });
+  window.scrollTo(0, 0);
+}
 function route() {
-  const key = location.hash.slice(1) || "home", doc = BY[key];
-  $("nav").innerHTML = navHTML(doc ? key : "home");
+  const key = location.hash.slice(1) || "home", doc = BY[key], code = BYCODE[key];
+  $("nav").innerHTML = navHTML(doc || code || key === "code" ? (code ? "code" : key) : "home");
   if (doc) { document.title = doc.title + " · " + DATA.title; showDoc(doc); }
+  else if (code) { document.title = code.title + " · " + DATA.title; showCode(code); }
+  else if (key === "code" && CODE.length) { document.title = "Simple code · " + DATA.title; showCodeIndex(); }
   else { document.title = DATA.title; showHome(); }
 }
 window.addEventListener("hashchange", route);
