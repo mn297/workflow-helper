@@ -1,6 +1,6 @@
 # Agent prompts
 
-Four prompts. Fill the angle-bracket placeholders. Send each as written; the
+Four prompts. Fill the angle-bracket placeholders. Send each as written. The
 sentences about reading files first, reporting "claims to check", and never
 touching files outside the folder came from failures on the first run.
 
@@ -12,12 +12,30 @@ Placeholders used below:
   that hold its measured numbers.
 - `<READER>`: one or two sentences on background, including the exact words
   the user used ("I cannot understand the low-level math").
-- `<PYTHON>`: the command that runs a script, for example
-  `cd <repo> && env -u PYTHONPATH pixi run python <script>`.
+- `<PYTHON>`: the command that runs a script in the workspace environment,
+  for example `.venv/bin/python <script>`, `uv run python <script>` or
+  `pixi run python <script>` from the workspace root. Add `env -u PYTHONPATH -u LD_LIBRARY_PATH` in front only
+  when this session inherited a sourced ROS shell, and say that the docs must
+  not show the prefix.
 - `<CHAPTERS>`: the chapter numbers, file names and a paragraph of required
   content for each chapter this writer owns.
 - `<CANONICAL FORMS>`: equations that more than one chapter writes, in the
-  one form all chapters must use, with the source line they match.
+  one form all chapters must use, with the source line they match. They live
+  in the README Notation section. Point the agents there.
+- `<UPSTREAM>`: the clones under `<FOLDER>/upstream/` with their hashes, and
+  the installed versions of the same libraries.
+- `<NN, NN>` and `<list of file paths>`: the numbers and absolute paths of
+  the chapters this writer owns.
+- `<chapter list with one line each>`: the README chapter table, one line
+  per chapter.
+- `<seed list>`: resources the user or the conversation already named, or
+  "none".
+- `<paste them>`: the "claims to check" bullets from every writer report.
+- `<ANCHOR files and documents>`: the same as `<ANCHOR>`.
+- `<one paragraph: ...>`: write the paragraph that the bracket describes.
+
+`NN` and `<slug>` inside a file pattern, as in `exercises/exNN_<slug>.py`,
+stay as written. The agent applies them to each chapter.
 
 ## 1. Chapter writer (subagent_type: "fork", two or three chapters each)
 
@@ -43,7 +61,19 @@ symbols: <CANONICAL FORMS>.
 
 Anchor and sources for measured numbers: <ANCHOR>. Quote a number only with
 its conditions and its source document. Label anything else "estimate" or
-"not measured".
+"not measured". Line numbers that the orchestrator saw earlier come from
+combined listings and can be offset. Do not reuse them. Grep each file
+yourself. Write every file:line path relative to <FOLDER>: a workspace file
+starts with ../, a clone starts with upstream/. Library sources: <UPSTREAM>.
+
+Run every snippet before you paste its numbers: <PYTHON>. Snippets hold no
+absolute paths and no sys.path lines. Import the anchor by its installed
+package name. The simple-english lint flags math and table rows. Those hits
+are false positives. Do not squeeze math to quiet them.
+
+If you find a bug in the anchor, reproduce it against a reference
+implementation, describe it with numbers in the chapter, and put it first in
+your report. Do not edit the anchor.
 
 Chapter contents:
 <CHAPTERS>
@@ -76,14 +106,21 @@ Task.
    or paid, URL, which sections or lectures, estimated hours, one sentence on
    why it fits that chapter.
 2. Seeds to verify, and replace if they fail: <seed list>.
-3. Download open-access PDFs into refs/ with short slug names. Only arXiv,
-   author-hosted preprints, open course notes. Never paid textbooks. Check
+3. Courses and videos. Search for online courses (Coursera, edX, MIT OCW,
+   university course pages), lecture series, conference tutorial talks and
+   interactive explainers on the topic. Verify each one. Give them their own
+   "Courses and videos" section in resources.md.
+4. Download open-access PDFs into refs/ with short slug names. Only arXiv,
+   author-hosted preprints, author-hosted free book PDFs that the author
+   offers (mark "free for personal use"), open course notes, and docs that
+   ship in a cloned repo. Never paid textbooks from other hosts. If the arXiv
+   tool returns HTTP 429, open the arXiv abstract page directly. Check
    each file with `file` and a first-page text extraction, and keep only real
    PDFs over 50 KB. Mark each downloaded file in resources.md.
-4. Write resources.md in simple English: intro, one section per chapter with
-   a table, "one week, about 20 hours" and "one month" plans, the list of
-   downloaded files with sizes. No em-dashes, no contractions, sentences
-   under 25 words.
+5. Write resources.md in simple English: intro, one section per chapter with
+   a table, the "Courses and videos" section, "one week, about 20 hours" and
+   "one month" plans, the list of downloaded files with sizes. No em-dashes,
+   no contractions, sentences under 25 words.
 
 Report back: the path, the refs/ listing with sizes and total, how many URLs
 you verified, and every seed you dropped or changed, with the reason.
@@ -105,13 +142,19 @@ Tasks, in order:
    a two-line docstring (chapter, section, numbers it must print). Run every
    script. Where script and text disagree, re-derive to find which is right,
    fix the other, record the fix. Make each script assert the numbers the
-   chapter states, so a later drift fails loudly. Write exercises/README.md
-   and run_all.sh (exits nonzero on any failure; test that).
+   chapter states, so a later drift fails loudly. Assert round-off values
+   (about 1e-15) as "< 1e-12", never as exact. Where a chapter says an anchor
+   function equals a formula, import the anchor and assert it. No absolute
+   paths and no sys.path lines in any script. Write exercises/README.md and
+   run_all.sh. run_all.sh finds the environment relative to its own
+   location, stops with a clear message when the shell environment is
+   contaminated (for example ROS on PYTHONPATH), and exits nonzero on any
+   failure. Test the failure exit.
 2. Cross-chapter consistency. Read all chapters. Then:
    a. Canonical forms: <CANONICAL FORMS>. Make every chapter match.
    b. Items from the writers' "claims to check" lists: <paste them>.
    c. Re-grep every file:line reference in every chapter and fix any that is
-      off.
+      off. Each path starts at <FOLDER>. Fix any path that does not.
    d. Every "see chapter NN" must point at a chapter that covers the thing.
    e. Every "not measured" and "estimate" label stays.
    f. Where two chapters derive the same quantity under different conditions,
@@ -150,7 +193,8 @@ A. Mathematical correctness. Re-derive every displayed derivation on paper
 B. Fidelity to the anchor. Every file:line points at what the text says
    (grep each). Every measured number exists in a source with the same
    conditions. Every statement about what the code does matches the code.
-   Keep "not measured" and "estimate" labels.
+   Re-check any claimed anchor bug from scratch against a reference
+   implementation. Keep "not measured" and "estimate" labels.
 C. Fidelity about other tools. Verify against primary sources (official
    docs, changelogs, source trees), not against the anchor repo's own notes,
    which can be stale. Relabel an inference as an inference.

@@ -12,7 +12,7 @@ the reader keeps hearing about (the other engine, the other library).
 
 ## 2. Concepts from scratch
 Define every term at first use, in one sentence each, before any equation
-uses it. Build from the previous chapter only. No forward references except
+uses it. Build only on earlier chapters. No forward references except
 "chapter NN defines X" where chapter NN really does.
 
 ## 3. Pen-and-paper derivation
@@ -21,8 +21,9 @@ numbers (a 1-DOF system, a 2-link chain, a 3-body tree). The reader must be
 able to redo it on one sheet of paper.
 
 ## 4. In our code
-Where the formula lives: `path/file.py:line-line`, verified by reading the
-file in this session, not from memory. Quote the anchor's own measured
+Where the formula lives: `../<dir>/file.py:line-line` or
+`upstream/<lib>/file:line`, a path that starts at the primer folder, verified
+by reading the file in this session, not from memory. Quote the anchor's own measured
 numbers with their conditions (model, thread count, step size) and the
 document they come from.
 
