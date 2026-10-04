@@ -78,6 +78,9 @@ anything.
   exercises/              exNN_<slug>.py per chapter snippet as an interactive lesson with # %% cells, README.md, run_all.sh, run_cells.py, out/ for generated GIFs
   upstream/               shallow clones of libraries the anchor does not contain, gitignored, hashes in README
   viz/<name>.html         the course visualizer: one interactive instrument per chapter, also published as an Artifact
+  viz/build_reader.py     copy of references/build_reader.py; writes index.html from the markdown, --check tests that it is current
+  index.html              the reader, generated: landing page, lesson panel, rendered markdown and math, links to and from the visualizer
+  run.sh                  copy of references/run.sh; rebuilds index.html and serves it on 127.0.0.1, so zoom stays the same across pages
 ```
 
 ## 3. Chapter shape
@@ -151,6 +154,11 @@ each failure from earlier runs and the rule it produced.
    the user's own Chrome. Completion: the node check passes for every number
    the chapter scripts assert, the page is published, a copy sits in
    `viz/`, and `README.md` names both.
+   Then build the reader with `references/reader.md`: a generated
+   `index.html` that renders every markdown file with its math, and links
+   each chapter to its station and back. Completion: `build_reader.py
+   --check` exits 0, every page renders all of its math in the same headless
+   Chrome, and `README.md` says how to rebuild it.
 
 Do not start wave 3 while a writer is still running. The verifier edits every
 chapter, so the two collide. The researcher touches only `resources.md` and
@@ -197,6 +205,7 @@ During waves 2 to 4, two events need a message, not an edit:
 Five to ten lines. Any bug found in the anchor, first. Where the folder is
 and how to go through it: per chapter, read, redo the derivation on paper,
 step through its script cell by cell in the editor (or run it whole), open
-the `file:line`, do the exercises. The visualizer link.
+the `file:line`, do the exercises. How to open the reader
+(`<folder>/run.sh`, then the URL it prints) and the visualizer link.
 What the reviewer changed, most serious first. Open items the reviewer did
 not apply. Total size of `refs/`. Nothing else.

@@ -8,8 +8,8 @@ in sys.argv, as in the VS Code Interactive Window. Exit status 0 if every script
 one or more fail.
 
 Run from the workspace root:
-    .venv/bin/python tutorial-lie-algebra/exercises/run_cells.py              # every script
-    .venv/bin/python tutorial-lie-algebra/exercises/run_cells.py ex03_exp_log_so3.py    # one script
+    .venv/bin/python <folder>/exercises/run_cells.py                  # every script
+    .venv/bin/python <folder>/exercises/run_cells.py ex03_<slug>.py   # one script
 """
 import pathlib
 import re

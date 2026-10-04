@@ -61,3 +61,6 @@ https://claude.ai/artifact/1m5GeQmF5JgPczKXFECJAh.
 - Play buttons keep a float accumulator and snap only the shown value.
   Slider labels print the value the maths uses.
 - Deep links with a bare hash token, `#s01` to `#s12`.
+- Read the page through the primer's `run.sh`, not from disk. A station
+  switch changes the hash, and Chrome keeps a separate zoom for each
+  `file://` URL.
