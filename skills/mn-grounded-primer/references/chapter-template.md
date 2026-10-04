@@ -33,8 +33,10 @@ with sources. Mark an inference as an inference.
 
 ## 6. Snippet
 One fenced numpy block under 50 lines. It prints the worked-example numbers
-from section 3 and nothing else. The verifier copies it verbatim to
-`exercises/exNN_<slug>.py`, so it must run standalone.
+from section 3 and nothing else. Write it as short steps, one blank line
+apart, each step printing its own numbers. The verifier splits it, line for
+line, into the cells of the interactive lesson `exercises/exNN_<slug>.py`,
+so it must run standalone.
 
 ## 7. Exercises
 Three. Each with its answer directly below it, worked, not only the result.

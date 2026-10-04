@@ -62,3 +62,25 @@ behind each one, so a rule is not dropped as unexplained.
   accumulator and snap only what is shown.
 - A range input snaps its value to the step, so the label showed 1.5700 while
   the maths used 1.5708. Print the value the maths uses.
+
+## Third run: interactive lessons (Lie groups, 2026-10-03)
+
+- The user asked, after the primer was done, for `# %%` cells in every
+  exercise script, to step through it in the editor. Five agents
+  converted 22 scripts. The verifier now builds the cells from the start
+  (`references/interactive-exercises.md`).
+- Scripts that only run top to bottom hid rerun bugs: a filter cell that
+  updates `x` and `P` in place, a random generator made in an earlier cell.
+  `run_cells.py` runs each cell twice and compares the printed text.
+- A kernel started in the workspace root imported the Drake submodule folder
+  `./drake/` instead of the drake package. `pydrake` then failed with
+  `ImportError: initialization failed`. The kernel must start in the folder
+  of the script, which is the VS Code default.
+- Chapter 10 cited line numbers inside `anim10_geodesic.py`. The conversion
+  moved every line. After any change to a script, grep the chapters for
+  citations into `exercises/`.
+- The assert counter matched `check_numbers()` as a check and missed the
+  exact-text helper `printed(`. Count the real helpers of the primer.
+- Old scripts stated some exercise answers only in a docstring, and one
+  docstring claimed an assert that did not exist. A converted exercise cell
+  asserts the answer, or it points at the step that does.

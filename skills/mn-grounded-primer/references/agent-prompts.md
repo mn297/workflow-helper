@@ -33,6 +33,8 @@ Placeholders used below:
 - `<paste them>`: the "claims to check" bullets from every writer report.
 - `<ANCHOR files and documents>`: the same as `<ANCHOR>`.
 - `<one paragraph: ...>`: write the paragraph that the bracket describes.
+- `<SKILL>`: the absolute path of this skill folder, the one that holds
+  `SKILL.md`.
 
 `NN` and `<slug>` inside a file pattern, as in `exercises/exNN_<slug>.py`,
 stay as written. The agent applies them to each chapter.
@@ -66,10 +68,13 @@ combined listings and can be offset. Do not reuse them. Grep each file
 yourself. Write every file:line path relative to <FOLDER>: a workspace file
 starts with ../, a clone starts with upstream/. Library sources: <UPSTREAM>.
 
-Run every snippet before you paste its numbers: <PYTHON>. Snippets hold no
-absolute paths and no sys.path lines. Import the anchor by its installed
-package name. The simple-english lint flags math and table rows. Those hits
-are false positives. Do not squeeze math to quiet them.
+Run every snippet before you paste its numbers: <PYTHON>. Write the
+snippet as short steps, one blank line apart, each step printing its own
+worked numbers. The verifier turns each step into one cell of an
+interactive lesson. Snippets hold no absolute paths and no sys.path
+lines. Import the anchor by its installed package name. The simple-english
+lint flags math and table rows. Those hits are false positives. Do not
+squeeze math to quiet them.
 
 If you find a bug in the anchor, reproduce it against a reference
 implementation, describe it with numbers in the chapter, and put it first in
@@ -138,8 +143,12 @@ Writing rules for prose you add: simple English, sentences under 25 words,
 active voice, no contractions, no em-dashes, define a term at first use.
 
 Tasks, in order:
-1. Exercises. Copy each chapter's snippet into exercises/exNN_<slug>.py with
-   a two-line docstring (chapter, section, numbers it must print). Run every
+1. Exercises. Build each exercises/exNN_<slug>.py as an interactive lesson.
+   Follow <SKILL>/references/interactive-exercises.md exactly: # %% cells,
+   one markdown cell, one code cell and one check cell per snippet step,
+   snippet lines verbatim, every cell safe to run twice. Start each file
+   with a two-line docstring (chapter, section, numbers it must print).
+   Copy <SKILL>/references/run_cells.py into exercises/ unchanged. Run every
    script. Where script and text disagree, re-derive to find which is right,
    fix the other, record the fix. Make each script assert the numbers the
    chapter states, so a later drift fails loudly. Assert round-off values
@@ -149,7 +158,8 @@ Tasks, in order:
    run_all.sh. run_all.sh finds the environment relative to its own
    location, stops with a clear message when the shell environment is
    contaminated (for example ROS on PYTHONPATH), and exits nonzero on any
-   failure. Test the failure exit.
+   failure. With --cells it then runs run_cells.py. Test the failure exit.
+   Add the section "Run a lesson cell by cell" to exercises/README.md.
 2. Cross-chapter consistency. Read all chapters. Then:
    a. Canonical forms: <CANONICAL FORMS>. Make every chapter match.
    b. Items from the writers' "claims to check" lists: <paste them>.
@@ -169,7 +179,7 @@ Tasks, in order:
    25 words, contractions, "should", "may"). Ignore hits inside math or
    code.
 
-Report back: scripts with pass or fail, every text fix (chapter, section,
+Report back: scripts with pass or fail in both modes, every text fix (chapter, section,
 old, new, why), how many file:line references were off, the glossary count,
 anything unresolved.
 ```
@@ -207,10 +217,10 @@ D. Pedagogy. Read as the intended reader. Terms defined before use, no
 Writing rules for prose you add: simple English, sentences under 25 words,
 active voice, no contractions, no em-dashes.
 
-Finish by running exercises/run_all.sh.
+Finish by running exercises/run_all.sh --cells.
 
 Report back, in order: (1) verdict in two sentences; (2) errors fixed,
 chapter + section + was + now, most serious first; (3) inferences relabeled;
 (4) pedagogy fixes applied; (5) larger suggestions not applied; (6) what you
-could not verify and what it would take; (7) run_all.sh result.
+could not verify and what it would take; (7) run_all.sh --cells result.
 ```

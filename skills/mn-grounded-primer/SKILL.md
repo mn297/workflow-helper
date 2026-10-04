@@ -3,8 +3,9 @@ name: mn-grounded-primer
 description: >
   Use when the user wants to learn a topic from scratch as a multi-chapter
   tutorial folder: a learning plan, a "basics tutorial series", a curriculum,
-  a study guide, or a primer, with pen-and-paper math, runnable exercises, a
-  verified resource list and downloaded papers. The topic is anchored on
+  a study guide, or a primer, with pen-and-paper math, runnable exercises
+  that also step cell by cell (# %% cells, no notebooks), a verified
+  resource list and downloaded papers. The topic is anchored on
   something the user owns or wants to adopt: a repo, a solver, a paper, or a
   library to learn (FEM with FEniCS, factor graphs with GTSAM, and so on).
   Also use when the user says "I cannot understand the low-level math",
@@ -37,7 +38,8 @@ run on a new topic, to see the shape.
 - `/home/john/practice_kinematics/tutorial-lie-algebra/`: Lie groups and manifolds,
   anchored on `featherstone_playground`, with library clones in `upstream/`,
   a Notation section in the README, and the visualizer
-  `viz/lie-instruments.html`, built 2026-10-03.
+  `viz/lie-instruments.html`, built 2026-10-03. Its exercise scripts are
+  interactive lessons with `# %%` cells, converted the same day.
 
 ## Me
 
@@ -73,7 +75,7 @@ anything.
   01-<slug>.md ... NN-<slug>.md
   resources.md            verified links per chapter, one-week and one-month plans, list of downloaded files
   refs/                   open-access PDFs only, slug names, each over 50 KB and a real PDF
-  exercises/              exNN_<slug>.py per chapter snippet, README.md, run_all.sh, out/ for generated GIFs
+  exercises/              exNN_<slug>.py per chapter snippet as an interactive lesson with # %% cells, README.md, run_all.sh, run_cells.py, out/ for generated GIFs
   upstream/               shallow clones of libraries the anchor does not contain, gitignored, hashes in README
   viz/<name>.html         the course visualizer: one interactive instrument per chapter, also published as an Artifact
 ```
@@ -99,8 +101,8 @@ the earlier runs. Before wave 0 on a new topic, read `references/pitfalls.md`:
 each failure from earlier runs and the rule it produced.
 
 0. Ground the sources yourself, before any agent starts.
-   - Environment: find the workspace environment, add the packages, install
-     the anchor editable. Run the anchor test suite in it and record the
+   - Environment: find the workspace environment, add the packages and
+     `ipykernel`, install the anchor editable. Run the anchor test suite in it and record the
      result as the first measured fact. If a memory says which interpreter
      works, test it again. Shell state goes stale (ROS paths, `~/.local`
      site-packages).
@@ -129,18 +131,19 @@ each failure from earlier runs and the rule it produced.
      README table exists. The researcher can still run.
 3. Verifier, after all writers report. One fresh agent with
    `model: "opus"` because it writes scripts (forks ignore the model
-   override). It extracts snippets to `exercises/`, runs them, fixes text or
+   override). It extracts snippets to `exercises/` as interactive lessons
+   (`references/interactive-exercises.md`), runs them, fixes text or
    script where they disagree, reconciles the cross-chapter items you list
    from the writers' reports, re-greps every `file:line`, builds the
    glossary, updates `README.md`, and runs the simple-english lint.
-   Completion: `run_all.sh` exits 0, its failure exit is tested, and the
-   report lists every text fix.
+   Completion: `run_all.sh --cells` exits 0, its failure exit is tested,
+   and the report lists every text fix.
 4. Reviewer, after the verifier and the researcher. One fresh `opus` agent,
    adversarial, four axes: re-derive the math, check fidelity to the anchor,
    check claims about other tools against primary sources, read as the
    intended reader. It fixes verifiable errors and lists larger suggestions
-   without applying them. Completion: `exercises/run_all.sh` exits 0 after
-   its last fix.
+   without applying them. Completion: `exercises/run_all.sh --cells` exits
+   0 after its last fix.
 5. Visualizer, after the reviewer, by you. One interactive page with one
    instrument per chapter, whose default settings reproduce the chapter's
    worked numbers. Follow `references/visualizer.md`. Render the page only
@@ -193,6 +196,7 @@ During waves 2 to 4, two events need a message, not an edit:
 
 Five to ten lines. Any bug found in the anchor, first. Where the folder is
 and how to go through it: per chapter, read, redo the derivation on paper,
-run its script, open the `file:line`, do the exercises. The visualizer link.
+step through its script cell by cell in the editor (or run it whole), open
+the `file:line`, do the exercises. The visualizer link.
 What the reviewer changed, most serious first. Open items the reviewer did
 not apply. Total size of `refs/`. Nothing else.
