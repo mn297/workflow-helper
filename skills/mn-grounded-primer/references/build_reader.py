@@ -1,6 +1,6 @@
 """Bake the primer's markdown into one reader page, index.html, at the primer root.
 
-The page has a landing view (chapter cards, a link to the instruments), a
+The page has a landing view (chapter cards, links to every page in viz/), a
 lesson view (left panel of lessons, rendered markdown with MathJax, a link to
 the chapter's station in viz/) and a code view of each simple script in
 code-simple/, one block per step. The markdown and the scripts are
@@ -84,9 +84,14 @@ def collect():
             m = re.match(r"[a-z]+(\d\d)_", path.name)
             code.append({"key": "k" + path.stem, "chapter": m.group(1) if m else "", "title": path.name,
                          "file": f"code-simple/{path.name}", "lesson": f"code-notebook/{path.name}", "text": path.read_text()})
-    viz = sorted(p for p in (ROOT / "viz").glob("*.html"))
+    # Every page in viz/ is listed. The course visualizer (its name holds "instruments") comes first,
+    # because lessons link to its stations.
+    pages = []
+    for path in sorted((ROOT / "viz").glob("*.html"), key=lambda q: ("instruments" not in q.name, q.name)):
+        m = re.search(r"<title>([^<]+)</title>", path.read_text())
+        pages.append({"href": f"viz/{path.name}", "title": m.group(1).strip() if m else path.stem})
     return {"title": title_of(readme, ROOT.name), "intro": intro_of(readme), "folder": ROOT.name,
-            "viz": f"viz/{viz[0].name}" if viz else "", "docs": docs, "code": code}
+            "viz": pages[0]["href"] if pages else "", "pages": pages, "docs": docs, "code": code}
 
 
 def build():
@@ -109,17 +114,17 @@ TEMPLATE = r"""<!doctype html>
 :root{
   --bg:#f3f4f1; --panel:#fbfbf9; --ink:#1c2228; --muted:#5b6670; --rule:#d6dad8; --grid:#e6e9e6;
   --accent:#245d86; --soft:#e9eef1; --codebg:#eef0ec;
-  --kw:#7a3e9d; --str:#2f6f3e; --num:#9a5b13;
+  --kw:#7a3e9d; --str:#2f6f3e; --num:#9a5b13; --bi:#1d6f72;
   --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#11161a; --panel:#171d22; --ink:#e2e7ea; --muted:#93a0a9; --rule:#2b343b; --grid:#202930;
-  --accent:#73b2df; --soft:#1d262d; --codebg:#1b2228; --kw:#c79bea; --str:#8fcf9b; --num:#e3b268; color-scheme:dark}}
+  --accent:#73b2df; --soft:#1d262d; --codebg:#1b2228; --kw:#c79bea; --str:#8fcf9b; --num:#e3b268; --bi:#6cc7c2; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#11161a; --panel:#171d22; --ink:#e2e7ea; --muted:#93a0a9; --rule:#2b343b; --grid:#202930;
-  --accent:#73b2df; --soft:#1d262d; --codebg:#1b2228; --kw:#c79bea; --str:#8fcf9b; --num:#e3b268; color-scheme:dark}
+  --accent:#73b2df; --soft:#1d262d; --codebg:#1b2228; --kw:#c79bea; --str:#8fcf9b; --num:#e3b268; --bi:#6cc7c2; color-scheme:dark}
 *{box-sizing:border-box}
 html{scroll-padding-top:16px}
 body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);margin:0;padding:20px 16px 48px}
@@ -144,7 +149,7 @@ main{min-width:0}
 .home h1{font:600 clamp(1.8rem,3.6vw,2.6rem)/1.1 var(--display);margin:.2rem 0 .6rem;text-wrap:balance}
 .home .intro{max-width:72ch;color:var(--muted);margin:0 0 1rem}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 1.4rem}
-.btn{display:inline-block;font:500 14px var(--body);text-decoration:none;border:1px solid var(--rule);background:var(--panel);color:var(--ink);border-radius:4px;padding:8px 12px}
+.btn{display:inline-block;font:500 14px var(--body);text-decoration:none;border:1px solid var(--rule);background:var(--panel);color:var(--ink);border-radius:4px;padding:8px 12px;max-width:100%;overflow-wrap:anywhere}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .btn:hover{border-color:var(--accent)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
@@ -158,13 +163,14 @@ main{min-width:0}
 .lesson{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:28px;align-items:start}
 @media (max-width:1250px){.lesson{grid-template-columns:minmax(0,1fr)} .toc{display:none}}
 .bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
-.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);overflow-wrap:anywhere}
 article{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:8px clamp(16px,3vw,40px) 24px;min-width:0}
 article>*{max-width:80ch}
 article h1{font:600 clamp(1.6rem,3vw,2.2rem)/1.15 var(--display);margin:1rem 0 .8rem;text-wrap:balance}
 article h2{font:600 1.45rem/1.2 var(--display);margin:2rem 0 .6rem;padding-top:.6rem;border-top:1px solid var(--grid)}
 article h3{font:600 1.15rem/1.25 var(--display);margin:1.4rem 0 .4rem}
 article p,article li{max-width:80ch}
+article a{overflow-wrap:anywhere}
 article code{font:.88em var(--mono);background:var(--codebg);padding:.08em .3em;border-radius:3px;overflow-wrap:anywhere}
 article a code{color:var(--accent)}
 article pre{background:var(--codebg);border-radius:5px;padding:10px 12px;overflow-x:auto;max-width:none;font-size:13px;line-height:1.5}
@@ -186,10 +192,15 @@ mjx-container[jax="SVG"]>svg{overflow:visible}
 .btns{display:flex;flex-wrap:wrap;gap:8px}
 article pre.phase{margin:14px 0}
 .hljs-comment,.hljs-quote{color:var(--muted);font-style:italic}
-.hljs-keyword,.hljs-built_in,.hljs-literal{color:var(--kw)}
-.hljs-string{color:var(--str)}
-.hljs-number{color:var(--num)}
-.hljs-title{color:var(--accent)}
+.hljs-keyword,.hljs-literal,.hljs-selector-tag{color:var(--kw)}
+.hljs-built_in,.hljs-type{color:var(--bi)}
+.hljs-variable.language_{color:var(--kw);font-style:italic}
+.hljs-string,.hljs-regexp{color:var(--str)}
+.hljs-subst{color:var(--ink)}
+.hljs-number,.hljs-variable,.hljs-template-variable{color:var(--num)}
+.hljs-title,.hljs-title.function_,.hljs-title.class_,.hljs-section,.hljs-name{color:var(--accent)}
+.hljs-meta,.hljs-meta .hljs-keyword{color:var(--muted)}
+.hljs-attr,.hljs-property{color:var(--bi)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin-top:16px}
 .pager a{flex:1 1 0;max-width:48%;overflow-wrap:anywhere}
 .pager .next{text-align:right;margin-left:auto}
@@ -289,7 +300,8 @@ function navHTML(current) {
   h += `<div class="navhead">Chapters</div>` + DOCS.filter(d => d.num).map(d => item(d.key, d.num, d.title)).join("");
   h += `<div class="navhead">Course</div>` + DOCS.filter(d => !d.num).map(d => item(d.key, "·", d.title)).join("");
   if (CODE.length) h += item("code", "·", "Simple code");
-  if (DATA.viz) h += `<div class="navhead">Interactive</div><a class="out" href="${DATA.viz}"><span class="n">▶</span><span>Instruments</span></a>`;
+  if (DATA.pages.length) h += `<div class="navhead">Interactive</div>` +
+    DATA.pages.map(p => `<a class="out" href="${p.href}"><span class="n">▶</span><span>${esc(p.title)}</span></a>`).join("");
   return h + "</div>";
 }
 function vizLink(doc) { return DATA.viz && doc.num && doc.num !== "00" ? `${DATA.viz}#s${doc.num}` : ""; }
@@ -304,7 +316,7 @@ function showHome() {
     <p class="intro" id="intro"></p>
     <div class="actions">
       <a class="btn primary" href="#${(lastDoc || chapters.find(d => d.num === "01") || chapters[0]).key}">${lastDoc ? "Continue: " + esc(lastDoc.title) : "Start with chapter 01"}</a>
-      ${DATA.viz ? `<a class="btn" href="${DATA.viz}">Open the instruments</a>` : ""}
+      ${DATA.pages.map(p => `<a class="btn" href="${p.href}">Open ${esc(p.title)}</a>`).join("")}
       ${BY.plan ? `<a class="btn" href="#plan">Course plan</a>` : ""}
     </div>
     <div class="section-head">Chapters</div>
@@ -327,6 +339,8 @@ function showDoc(doc) {
       <div class="pager">${prev ? `<a class="btn" href="#${prev.key}">← ${esc(prev.title)}</a>` : ""}${next ? `<a class="btn next" href="#${next.key}">${esc(next.title)} →</a>` : ""}</div>
     </div><aside class="toc" id="toc" aria-label="On this page"></aside></div>`;
   const art = $("article");
+  // Highlight only fences that name a language. Untagged fences hold program output and stay plain.
+  if (window.hljs) art.querySelectorAll('pre code[class*="language-"]').forEach(el => hljs.highlightElement(el));
   fixLinks(art, doc);
   const heads = [...art.querySelectorAll("h2, h3")];
   heads.forEach(h => { if (!h.id) h.id = slug(h.textContent); });
