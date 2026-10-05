@@ -6,7 +6,8 @@ description: >
   new to them. Also use when the user says "explain", "help me understand",
   "what does this mean", "walk me through", or "I don't get it". Produces a
   thorough, example-heavy explanation in chat. For short plain-English notes
-  on a paper saved as a file, use mn-writing-plain-paper-notes instead.
+  on a paper saved as a file, use mn-writing-plain-paper-notes instead. For
+  how a paper or method works end to end, use mn-tracing-papers-end-to-end.
 compatibility: claude-code cursor codex gemini-cli opencode
 metadata:
   tags: "Explanation, Teaching, Prose, Readability"
