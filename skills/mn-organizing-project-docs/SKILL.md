@@ -41,7 +41,7 @@ A project is any folder with its own README: a full repository, or a subfolder s
 4. Add one card for the page to the `PAGES` list in `docs/index.html`: topic, title, one line on what the page shows, `href`, and the `artifact` URL of a published page.
 5. To publish one page with inline CSS and JS, call the Artifact tool with its file in `docs/` as `file_path`. To publish pages that share `assets/`, publish the whole site: `docs/index.html` as `file_path`, and every other page and asset in `files`, keyed by its path inside `docs/`. Publish later updates from the same paths, so the URL stays. Open the link, and make sure that the styles and charts load. Write the URL into the `artifact` field of each card that it covers.
 6. Make sure that the project README names `docs/run.sh` and `docs/index.html` in one line. Make sure that git tracks `docs/`.
-7. Serve the folder with `run.sh` in the background, fetch every page and every internal link with curl, and stop the server.
+7. Serve the folder with `run.sh` in the background, and read the port from the `Landing page:` line that it prints. Fetch every page and every internal link with curl, and stop the server.
 
 Three checks end the work. Every page in `docs/` has a card in `index.html`. Every internal link returns 200. Every published page has its URL in its card.
 
@@ -50,15 +50,38 @@ Three checks end the work. Every page in `docs/` has a card in `index.html`. Eve
 ```bash
 #!/usr/bin/env bash
 # Serve this docs folder on localhost.
-#   ./docs/run.sh [port]
+#   ./docs/run.sh [port]        default port 8000, or set PORT
+# If the port is in use, the server takes the next free one (up to 20 tries) and prints it.
 set -euo pipefail
 cd "$(dirname "$0")"
-PORT="${1:-${PORT:-8000}}"
-echo "Landing page: http://127.0.0.1:$PORT/"
-exec python3 -m http.server "$PORT" --bind 127.0.0.1
+exec python3 - "${1:-${PORT:-8000}}" <<'PY'
+import errno
+import http.server
+import sys
+
+if not sys.argv[1].isdecimal():
+    sys.exit(f"not a port number: {sys.argv[1]}")
+start = int(sys.argv[1])
+for port in range(start, start + 20):
+    try:
+        server = http.server.ThreadingHTTPServer(("127.0.0.1", port), http.server.SimpleHTTPRequestHandler)
+        break
+    except (OSError, OverflowError) as e:  # OverflowError: port above 65535
+        if getattr(e, "errno", None) != errno.EADDRINUSE:
+            sys.exit(f"port {port}: {e}")
+else:
+    sys.exit(f"ports {start}-{start + 19} are all in use")
+if port != start:
+    print(f"Port {start} is in use, using {port}.")
+print(f"Landing page: http://127.0.0.1:{server.server_port}/", flush=True)
+try:
+    server.serve_forever()
+except KeyboardInterrupt:
+    pass
+PY
 ```
 
-Make it executable (`chmod +x`).
+Make it executable (`chmod +x`). If the port is in use, for example by the docs server of another project, the script takes the next free port and prints it. In the same case, `python3 -m http.server` stops with `OSError: [Errno 98] Address already in use`.
 
 ## Template: the card list in index.html
 

@@ -51,8 +51,8 @@ primer in a browser instead of raw markdown. Reference instance:
    It writes the simple copies again, rebuilds `index.html` and serves it on
    `127.0.0.1`. Completion: the
    reader URL it prints returns 200. A `.py` link returns
-   `text/plain; charset=utf-8`. A second start on the same port exits 1
-   with a message.
+   `text/plain; charset=utf-8`. A second start on the same port takes the
+   next free port and prints it.
 6. In the primer README, next to the visualizer, say what `index.html` is
    and that `run.sh` serves it. Say that it loads marked and MathJax from
    cdnjs. Say that `run.sh` or `build_reader.py` must run again after any
@@ -93,6 +93,8 @@ primer in a browser instead of raw markdown. Reference instance:
   not fix it: Chrome's own per-URL zoom still applied on top.
 - `run.sh` serves the parent of the primer folder, so the `../` code links
   resolve. It adds `charset=utf-8` to text types and serves `.py` and `.md`
-  as `text/plain`. Without the charset, Chrome showed `§` as `Â§`. Its port
-  probe sets `SO_REUSEADDR`, like the server. Without it, a restart within
-  a minute reported the port as busy.
+  as `text/plain`. Without the charset, Chrome showed `§` as `Â§`. The
+  server itself finds a free port and keeps it. With a separate port probe
+  before the server, two starts at the same time took the same port, and
+  the second one failed. Chrome stores zoom per host, not per port, so a
+  fallback port keeps the same zoom.
