@@ -9,9 +9,10 @@
 # logind's SetBrightness, which needs no root. GNOME's slider follows the udev
 # change event. External monitor: DDC/CI VCP 0x10 (brightness) via ddcutil.
 #
-# Made for X11: the cursor comes from xdotool and output geometry from xrandr.
-# On Wayland both go through Xwayland, which sees the cursor only while it is
-# over an X11 window. Over a Wayland window, the last X11 position is used.
+# Finding the monitor: on X11, xdotool gives the cursor and xrandr the output
+# geometry and EDID. Wayland gives other programs no global cursor, so the
+# GNOME Shell extension cursor-brightness@workflow-helper names the connector,
+# and the EDID comes from /sys/class/drm.
 #
 # Values snap to multiples of STEP: 73 goes up to 80, down to 70.
 #
@@ -51,27 +52,40 @@ next_pct() {
 }
 
 # ------------------------------------------------------ output under cursor
-# Prints "<output> <first 128 EDID bytes as hex>" for the connected output
-# whose geometry contains the cursor.
-eval "$(xdotool getmouselocation --shell)"
-read -r OUTPUT EDID < <(xrandr --current --verbose | awk -v x="$X" -v y="$Y" '
-	function flush() { if (hit) { print name, substr(edid, 1, 256); done = 1; exit } }
-	/^[^ \t]/ {
-		flush(); hit = 0; inedid = 0; edid = ""
-		if ($2 == "connected" && match($0, /[0-9]+x[0-9]+\+[0-9]+\+[0-9]+/)) {
-			split(substr($0, RSTART, RLENGTH), g, /[x+]/)
-			hit = x + 0 >= g[3] + 0 && x + 0 < g[3] + g[1] && y + 0 >= g[4] + 0 && y + 0 < g[4] + g[2]
-			name = $1
+# Sets OUTPUT for the monitor under the cursor, and EDID (first 128 bytes as
+# hex) when xrandr has it.
+if [ -n "${WAYLAND_DISPLAY:-}" ]; then
+	if ! read -r _ OUTPUT < <(busctl --user call org.gnome.Shell /org/workflowhelper/CursorBrightness \
+		org.workflowhelper.CursorBrightness GetConnector); then
+		echo "no answer from the shell extension cursor-brightness@workflow-helper." >&2
+		echo "Run ./setup.sh brightness, then log out and back in once." >&2
+		exit 1
+	fi
+	OUTPUT=${OUTPUT//\"/}
+	EDID=
+else
+	eval "$(xdotool getmouselocation --shell)"
+	# Prints "<output> <EDID hex>" for the connected output whose geometry
+	# contains the cursor.
+	read -r OUTPUT EDID < <(xrandr --current --verbose | awk -v x="$X" -v y="$Y" '
+		function flush() { if (hit) { print name, substr(edid, 1, 256); done = 1; exit } }
+		/^[^ \t]/ {
+			flush(); hit = 0; inedid = 0; edid = ""
+			if ($2 == "connected" && match($0, /[0-9]+x[0-9]+\+[0-9]+\+[0-9]+/)) {
+				split(substr($0, RSTART, RLENGTH), g, /[x+]/)
+				hit = x + 0 >= g[3] + 0 && x + 0 < g[3] + g[1] && y + 0 >= g[4] + 0 && y + 0 < g[4] + g[2]
+				name = $1
+			}
+			next
 		}
-		next
-	}
-	hit && /^\tEDID:/ { inedid = 1; next }
-	hit && inedid && /^\t\t[0-9a-f]+$/ { gsub(/[ \t]/, ""); edid = edid $0; next }
-	{ inedid = 0 }
-	END { if (!done) flush() }')
-if [ -z "${OUTPUT:-}" ]; then
-	echo "no connected output under the cursor at $X,$Y" >&2
-	exit 1
+		hit && /^\tEDID:/ { inedid = 1; next }
+		hit && inedid && /^\t\t[0-9a-f]+$/ { gsub(/[ \t]/, ""); edid = edid $0; next }
+		{ inedid = 0 }
+		END { if (!done) flush() }')
+	if [ -z "${OUTPUT:-}" ]; then
+		echo "no connected output under the cursor at $X,$Y" >&2
+		exit 1
+	fi
 fi
 
 # ------------------------------------------------------------ laptop panel
@@ -103,9 +117,10 @@ eDP* | LVDS* | DSI*)
 esac
 
 # ---------------------------------------------------------- DDC/CI monitor
-# Wayland: Xwayland 23.x (Ubuntu 24.04) lists outputs without EDID. Its output
-# names are mutter's connector names, which are the kernel's names with HDMI-A
-# shortened to HDMI (HDMI-5 is card2-HDMI-A-5). So read the EDID from sysfs.
+# The Wayland path sets no EDID, and Xwayland 23.x (Ubuntu 24.04) lists outputs
+# without one. Both name outputs by mutter's connector names: the kernel's names
+# with HDMI-A shortened to HDMI (HDMI-5 is card2-HDMI-A-5). So read the EDID
+# from sysfs.
 if [ ${#EDID} -ne 256 ]; then
 	conn=$OUTPUT
 	[[ $conn =~ ^HDMI-[0-9]+$ ]] && conn=HDMI-A-${conn#HDMI-}
@@ -134,9 +149,10 @@ BURST=5                     # seconds a target stays fresh enough to step from
 find_bus() {
 	ddcutil detect --verbose 2>/dev/null | awk -v want="$EDID" '
 		/^Display [0-9]/ { ok = 1; bus = ""; hex = ""; next }
-		/^[^ ]/ { ok = 0 }
+		/^[^ +]/ { ok = 0 }
 		ok && /I2C bus:/ { sub(/.*i2c-/, ""); bus = $0 }
-		ok && /^ +\+00[0-7]0 / {
+		# ddcutil 2.2 prints the hex rows at column 0, older versions indent them.
+		ok && /^ *\+00[0-7]0 / {
 			for (i = 2; i <= 17; i++) hex = hex $i
 			if ($1 == "+0070" && hex == want) { print bus; exit }
 		}'

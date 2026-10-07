@@ -105,22 +105,24 @@ STEP=5 ./ubuntu/setup.sh brightness         # 5% per press
 
 The keys are GNOME custom shortcuts. You can see them in Settings > Keyboard > Custom Shortcuts, as "Brightness up (workflow-helper)" and "Brightness down (workflow-helper)". GNOME keeps them after a reboot.
 
-If `KEYS` includes `fn`, the setup removes the brightness keys from the GNOME brightness control. If it does not, the setup gives them back. In both cases, the setup restarts gsd-media-keys, the GNOME service for keyboard shortcuts. Without the restart, the service keeps its old brightness shortcut, and the new shortcut cannot use the key.
+If `KEYS` includes `fn`, the setup removes the brightness keys from the GNOME brightness control. If it does not, the setup gives them back. GNOME 46 (Ubuntu 24.04) keeps these keys in gsd-media-keys, the GNOME service for keyboard shortcuts. The setup restarts this service, because the service keeps its old shortcut until a restart. GNOME 49 and later (Ubuntu 26.04) keep the keys in GNOME Shell, which applies the change immediately.
 
 Earlier versions used xbindkeys. When you typed on a different keyboard, the keymap changed, and xbindkeys lost its keys. The setup removes the old xbindkeys binding.
 
-The feature works best in an X11 session ("Ubuntu on Xorg"). Ubuntu 26.04 has only Wayland. On Wayland, the script gets the cursor position from Xwayland, the part of the desktop that runs X11 apps. Xwayland knows the cursor position only while the cursor is over an X11 app. When the cursor is over a Wayland app, the keys change the monitor where the cursor last was over an X11 app.
+The feature works in X11 and Wayland sessions. On X11, the script gets the cursor position from xdotool. Wayland does not give the cursor position to other programs. For Wayland, the setup installs the GNOME Shell extension [`cursor-brightness@workflow-helper`](ubuntu/cursor-brightness@workflow-helper/). The extension tells the script the connector name of the monitor under the cursor, for example `DP-1`. The script then reads the EDID of that connector from `/sys/class/drm`.
 
-The first press on an external monitor takes about 3 seconds. The script finds the i2c bus of the monitor from its EDID, the identity block that the monitor sends. It keeps the result until reboot, so later presses take about 0.3 seconds. On Ubuntu 24.04 with Wayland, `xrandr` does not show the EDID, so the script reads it from `/sys/class/drm`.
+After the first setup in a Wayland session, log out and log in again. GNOME Shell loads a new extension only at login.
+
+The first press on an external monitor takes about 3 seconds. The script finds the i2c bus of the monitor from its EDID, the identity block that the monitor sends. It keeps the result until reboot, so later presses take about 0.3 seconds.
 
 | Problem | Fix |
 |---|---|
 | External monitor does not change | Turn on DDC/CI in the menu of the monitor. Then run `ddcutil detect`. |
+| Wayland: `no answer from the shell extension cursor-brightness@workflow-helper.` | Log out and log in again. If the error stays, run `gnome-extensions info cursor-brightness@workflow-helper` and make sure that the state is `ACTIVE`. |
 | No key does anything | Make sure that the shortcuts exist in Settings > Keyboard > Custom Shortcuts. If they do not, run `./ubuntu/setup.sh brightness` again. |
 | Fn keys change only the laptop panel, not the monitor under the cursor | The GNOME brightness control has the keys again. Run `./ubuntu/setup.sh brightness` again. It restarts gsd-media-keys. |
-| Keys change the wrong monitor (Wayland) | Xwayland has an old cursor position. Move the cursor over an X11 app on the correct monitor, then press the key again. |
 | Keys do nothing on the lock screen | This is expected. The GNOME lock screen takes all keys. |
-| Disable | Delete the "Brightness ... (workflow-helper)" shortcuts in Settings > Keyboard > Custom Shortcuts. |
+| Disable | Delete the "Brightness ... (workflow-helper)" shortcuts in Settings > Keyboard > Custom Shortcuts. Then run `gnome-extensions disable cursor-brightness@workflow-helper`. |
 
 ### Red mouse cursor
 

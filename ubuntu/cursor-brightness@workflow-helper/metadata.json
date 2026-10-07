@@ -1,0 +1,7 @@
+{
+  "uuid": "cursor-brightness@workflow-helper",
+  "name": "Cursor brightness",
+  "description": "Tells cursor-brightness.sh which monitor the mouse cursor is on. Wayland gives other programs no global cursor position.",
+  "shell-version": ["46", "47", "48", "49", "50"],
+  "url": "https://github.com/mn297/workflow-helper"
+}

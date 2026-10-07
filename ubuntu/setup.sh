@@ -15,7 +15,7 @@
 #   ./setup.sh scroll                   # thumb-scroll mapping only
 #   SPEED=30 ./setup.sh scroll          # retune the scroll speed
 #   DEVICE="USB OPTICAL MOUSE " ./setup.sh scroll   # one mouse only
-#   ./setup.sh brightness               # brightness keys follow the cursor
+#   ./setup.sh brightness               # brightness keys follow the cursor (X11 and Wayland)
 #   KEYS=numpad ./setup.sh brightness   # numpad 8/5, not Fn keys + numpad +/-
 #   STEP=5 ./setup.sh brightness        # 5% per press, not 10%
 #   ./setup.sh astra                    # Astra Monitor: 5070 Ti VRAM in the top bar
@@ -463,11 +463,14 @@ fi
 # (KP_Up and KP_8, KP_Begin and KP_5), so the NumLock state does not matter.
 #
 # A key takes one shortcut only, so with fn in KEYS, GNOME's own brightness
-# bindings are cleared; without fn they are restored. gsd-media-keys keeps its
-# old grab until it restarts, so the section restarts it.
+# bindings are cleared; without fn they are restored. GNOME 46 keeps them in
+# gsd-media-keys, which holds its old grab until it restarts, so the section
+# restarts it. GNOME 49+ keeps them in the shell, which regrabs at once.
 #
-# Made for X11. On Wayland the cursor position comes from Xwayland, which sees
-# the cursor only while it is over an X11 window.
+# On X11 the script finds the cursor with xdotool. Wayland gives other programs
+# no global cursor, so the section also installs the GNOME Shell extension
+# cursor-brightness@workflow-helper, which tells the script the monitor under
+# the cursor. The shell loads a new extension only at login.
 if run_section brightness; then
 
 	BINDINGS=() # "<direction>:<keysym>"
@@ -498,12 +501,21 @@ if run_section brightness; then
 	say "Binding brightness keys ($KEYS)"
 	MEDIA_KEYS=org.gnome.settings-daemon.plugins.media-keys
 	CUSTOM=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings
+	EXT_UUID=cursor-brightness@workflow-helper
+	EXT_DIR="$HOME/.local/share/gnome-shell/extensions"
 	if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v gsettings >/dev/null; then
-		for key in screen-brightness-up-static screen-brightness-down-static; do
+		if gsettings get org.gnome.shell.keybindings screen-brightness-up >/dev/null 2>&1; then
+			FN_SCHEMA=org.gnome.shell.keybindings # GNOME 49+
+			FN_KEYS=(screen-brightness-up screen-brightness-down)
+		else
+			FN_SCHEMA=$MEDIA_KEYS
+			FN_KEYS=(screen-brightness-up-static screen-brightness-down-static)
+		fi
+		for key in "${FN_KEYS[@]}"; do
 			if [[ ",$KEYS," == *,fn,* ]]; then
-				gsettings set "$MEDIA_KEYS" "$key" "[]"
+				gsettings set "$FN_SCHEMA" "$key" "[]"
 			else
-				gsettings reset "$MEDIA_KEYS" "$key"
+				gsettings reset "$FN_SCHEMA" "$key"
 			fi
 		done
 
@@ -530,6 +542,18 @@ if run_section brightness; then
 
 		# The service unit refuses a manual restart; its target does not.
 		systemctl --user restart org.gnome.SettingsDaemon.MediaKeys.target
+
+		say "Installing the GNOME Shell extension $EXT_UUID"
+		mkdir -p "$EXT_DIR"
+		ln -sfn "$HERE/$EXT_UUID" "$EXT_DIR/$EXT_UUID"
+		enabled=$(gsettings get org.gnome.shell enabled-extensions)
+		if [[ $enabled == *"'$EXT_UUID'"* ]]; then
+			echo "already enabled"
+		elif [ "$enabled" = "@as []" ]; then
+			gsettings set org.gnome.shell enabled-extensions "['$EXT_UUID']"
+		else
+			gsettings set org.gnome.shell enabled-extensions "${enabled%]}, '$EXT_UUID']"
+		fi
 	else
 		echo "no session bus (ssh/tty?): run this section from the desktop session" >&2
 	fi
@@ -548,9 +572,9 @@ if run_section brightness; then
 		echo "removed the old xbindkeys binding"
 	fi
 
-	if [ "${XDG_SESSION_TYPE:-}" = wayland ]; then
-		echo "NOTE: Wayland session. The keys follow the cursor only while it is over an X11 app;" >&2
-		echo "      over a Wayland app they change the monitor it was last on over an X11 app." >&2
+	if [ -n "${WAYLAND_DISPLAY:-}" ] && ! busctl --user call org.gnome.Shell /org/workflowhelper/CursorBrightness \
+		org.workflowhelper.CursorBrightness GetConnector >/dev/null 2>&1; then
+		echo "Wayland: log out and back in once, so GNOME Shell loads $EXT_UUID." >&2
 	fi
 
 	cat <<EOF
