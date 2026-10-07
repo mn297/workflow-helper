@@ -41,11 +41,33 @@ run on a new topic, to see the shape.
   `viz/lie-instruments.html`, built 2026-10-03. Its exercise scripts are
   interactive lessons with `# %%` cells, converted the same day.
 
-## Me
+## My background
 
-Robotics and simulation engineer. I build things with help, then want to
-understand the mathematics under them. Strong at code, weak at the derivation
-chain. Assume vectors, matrices, derivatives, Python. Build everything else.
+- I am a robotics engineer doing research in a lab. My main work is trees:
+  perception, simulation and sim-to-real.
+- I build systems with ROS 2, Python, pixi, Rerun, Isaac Sim, Isaac Lab and
+  MuJoCo. Name these tools without explaining them.
+- I use perception pipelines every day: RGB-D cameras, SLAM trackers, TSDF
+  fusion and segmentation models. Their internals are less clear to me.
+- I know reinforcement learning at about Spinning Up level, and basic control
+  such as PD gains and joint torques.
+- I know vectors, matrices, derivatives and rigid-body kinematics. I am still
+  learning Lie groups.
+- I am new to the math inside simulators: time stepping, implicit versus
+  explicit, modes, rods, contact and FEM.
+- I am new to state estimation, factor graphs, differentiable simulation and
+  most subfield jargon. Explain these from the ground up, and define each
+  term at its first use.
+- I understand by tracing one concrete example end to end, in the order the
+  data flows, with real numbers at each step.
+- I often restate what I think happens. If I am right, say so plainly. If I
+  am wrong, correct only the part that is wrong.
+- Put each equation next to the concrete case, define every symbol, and name
+  the file or function that does that step.
+- Diagrams, tables and interactive visuals help me more than long prose. Give
+  commands as copy-paste blocks.
+- Write casually and plainly. Answer my exact question first, without
+  padding. When you offer options, recommend one.
 
 ## 1. Pin down six inputs, then move
 
@@ -57,7 +79,7 @@ folders.
 |---|---|
 | Topic | The thing the user named |
 | Anchor | A repo path the user owns that uses the topic. If none, one target problem solved in the simplest library for that topic, then mapped to the library the user wants to learn (example: FEM anchor = a cantilever in scikit-fem, then the same problem in FEniCSx) |
-| Reader background | The "Me" section above |
+| Reader background | The "My background" section above |
 | Folder | `<repo>/tutorial-<topic-slug>/` if the anchor is a repo, else `~/tutorials/tutorial-<topic-slug>/`. The slug is one to three lowercase words in kebab case that name the topic, not the anchor: `tutorial-lie-algebra`, `tutorial-fem`, `tutorial-factor-graphs`. Never a bare `tutorial/`, because a repo can hold several primers. If the folder exists, add a word (`tutorial-lie-algebra-se3`), never overwrite |
 | Ladder | Propose 8 to 12 chapters, one concept each. Chapter 1 is the mathematical object the reader cannot skip. The last chapter is "what we did versus the alternatives" |
 | Environment | The Python environment the workspace already has (uv or pixi). Add the primer's packages there and install the anchor in editable mode. When the workspace has none, create one with pixi. Never add a second one |

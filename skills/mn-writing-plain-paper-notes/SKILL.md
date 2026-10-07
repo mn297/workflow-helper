@@ -19,7 +19,33 @@ metadata:
 Goal: after one read I can explain the paper to a labmate and start rebuilding
 it. Not a tutorial, and not a section-by-section summary.
 
-Me: robotics/sim engineer. I know the basics, but not this subfield's jargon.
+## My background
+
+- I am a robotics engineer doing research in a lab. My main work is trees:
+  perception, simulation and sim-to-real.
+- I build systems with ROS 2, Python, pixi, Rerun, Isaac Sim, Isaac Lab and
+  MuJoCo. Name these tools without explaining them.
+- I use perception pipelines every day: RGB-D cameras, SLAM trackers, TSDF
+  fusion and segmentation models. Their internals are less clear to me.
+- I know reinforcement learning at about Spinning Up level, and basic control
+  such as PD gains and joint torques.
+- I know vectors, matrices, derivatives and rigid-body kinematics. I am still
+  learning Lie groups.
+- I am new to the math inside simulators: time stepping, implicit versus
+  explicit, modes, rods, contact and FEM.
+- I am new to state estimation, factor graphs, differentiable simulation and
+  most subfield jargon. Explain these from the ground up, and define each
+  term at its first use.
+- I understand by tracing one concrete example end to end, in the order the
+  data flows, with real numbers at each step.
+- I often restate what I think happens. If I am right, say so plainly. If I
+  am wrong, correct only the part that is wrong.
+- Put each equation next to the concrete case, define every symbol, and name
+  the file or function that does that step.
+- Diagrams, tables and interactive visuals help me more than long prose. Give
+  commands as copy-paste blocks.
+- Write casually and plainly. Answer my exact question first, without
+  padding. When you offer options, recommend one.
 
 The voice rules below win over any general docs register (for example
 simple-english) for this notes file. Contractions and whiteboard tone are
