@@ -454,7 +454,8 @@ fi
 # bindings are cleared; without fn they are restored. gsd-media-keys keeps its
 # old grab until it restarts, so the section restarts it.
 #
-# X11 only: Wayland gives no global cursor position.
+# Made for X11. On Wayland the cursor position comes from Xwayland, which sees
+# the cursor only while it is over an X11 window.
 if run_section brightness; then
 
 	BINDINGS=() # "<direction>:<keysym>"
@@ -536,7 +537,8 @@ if run_section brightness; then
 	fi
 
 	if [ "${XDG_SESSION_TYPE:-}" = wayland ]; then
-		echo "WARNING: Wayland session. Log in with 'Ubuntu on Xorg' for this to work." >&2
+		echo "NOTE: Wayland session. The keys follow the cursor only while it is over an X11 app;" >&2
+		echo "      over a Wayland app they change the monitor it was last on over an X11 app." >&2
 	fi
 
 	cat <<EOF

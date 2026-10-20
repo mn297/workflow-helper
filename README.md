@@ -107,17 +107,18 @@ The keys are GNOME custom shortcuts. You can see them in Settings > Keyboard > C
 
 If `KEYS` includes `fn`, the setup removes the brightness keys from the GNOME brightness control. If it does not, the setup gives them back. In both cases, the setup restarts gsd-media-keys, the GNOME service for keyboard shortcuts. Without the restart, the service keeps its old brightness shortcut, and the new shortcut cannot use the key.
 
-Earlier versions used xbindkeys. xbindkeys lost its keys after each keymap change, for example when you typed on a different keyboard. The setup removes the old xbindkeys binding.
+Earlier versions used xbindkeys. When you typed on a different keyboard, the keymap changed, and xbindkeys lost its keys. The setup removes the old xbindkeys binding.
 
-The feature works only in an X11 session ("Ubuntu on Xorg"). Wayland does not give the cursor position to other programs.
+The feature works best in an X11 session ("Ubuntu on Xorg"). Ubuntu 26.04 has only Wayland. On Wayland, the script gets the cursor position from Xwayland, the part of the desktop that runs X11 apps. Xwayland knows the cursor position only while the cursor is over an X11 app. When the cursor is over a Wayland app, the keys change the monitor where the cursor last was over an X11 app.
 
-The first press on an external monitor takes about 3 seconds. The script finds the i2c bus of the monitor from its EDID, the identity block that the monitor sends. It keeps the result until reboot, so later presses take about 0.3 seconds.
+The first press on an external monitor takes about 3 seconds. The script finds the i2c bus of the monitor from its EDID, the identity block that the monitor sends. It keeps the result until reboot, so later presses take about 0.3 seconds. On Ubuntu 24.04 with Wayland, `xrandr` does not show the EDID, so the script reads it from `/sys/class/drm`.
 
 | Problem | Fix |
 |---|---|
 | External monitor does not change | Turn on DDC/CI in the menu of the monitor. Then run `ddcutil detect`. |
 | No key does anything | Make sure that the shortcuts exist in Settings > Keyboard > Custom Shortcuts. If they do not, run `./ubuntu/setup.sh brightness` again. |
 | Fn keys change only the laptop panel, not the monitor under the cursor | The GNOME brightness control has the keys again. Run `./ubuntu/setup.sh brightness` again. It restarts gsd-media-keys. |
+| Keys change the wrong monitor (Wayland) | Xwayland has an old cursor position. Move the cursor over an X11 app on the correct monitor, then press the key again. |
 | Keys do nothing on the lock screen | This is expected. The GNOME lock screen takes all keys. |
 | Disable | Delete the "Brightness ... (workflow-helper)" shortcuts in Settings > Keyboard > Custom Shortcuts. |
 

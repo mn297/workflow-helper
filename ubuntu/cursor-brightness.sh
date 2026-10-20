@@ -9,7 +9,9 @@
 # logind's SetBrightness, which needs no root. GNOME's slider follows the udev
 # change event. External monitor: DDC/CI VCP 0x10 (brightness) via ddcutil.
 #
-# X11 only: the cursor comes from xdotool and output geometry from xrandr.
+# Made for X11: the cursor comes from xdotool and output geometry from xrandr.
+# On Wayland both go through Xwayland, which sees the cursor only while it is
+# over an X11 window. Over a Wayland window, the last X11 position is used.
 #
 # Values snap to multiples of STEP: 73 goes up to 80, down to 70.
 #
@@ -101,8 +103,24 @@ eDP* | LVDS* | DSI*)
 esac
 
 # ---------------------------------------------------------- DDC/CI monitor
+# Wayland: Xwayland 23.x (Ubuntu 24.04) lists outputs without EDID. Its output
+# names are mutter's connector names, which are the kernel's names with HDMI-A
+# shortened to HDMI (HDMI-5 is card2-HDMI-A-5). So read the EDID from sysfs.
 if [ ${#EDID} -ne 256 ]; then
-	echo "$OUTPUT: xrandr shows no EDID, cannot match it to a DDC bus" >&2
+	conn=$OUTPUT
+	[[ $conn =~ ^HDMI-[0-9]+$ ]] && conn=HDMI-A-${conn#HDMI-}
+	found=()
+	for d in /sys/class/drm/card*-"$conn"; do
+		[ "$(cat "$d/status" 2>/dev/null)" = connected ] && found+=("$d")
+	done
+	# Two GPUs can both have a connected connector of this name. Then the name
+	# does not tell which one is the output, so do not guess.
+	if [ ${#found[@]} -eq 1 ]; then
+		EDID=$(head -c 128 "${found[0]}/edid" | od -An -tx1 -v | tr -d ' \n')
+	fi
+fi
+if [ ${#EDID} -ne 256 ]; then
+	echo "$OUTPUT: no EDID in xrandr or /sys/class/drm, cannot match it to a DDC bus" >&2
 	exit 1
 fi
 KEY=$(printf '%s' "$EDID" | md5sum | cut -c1-12)
