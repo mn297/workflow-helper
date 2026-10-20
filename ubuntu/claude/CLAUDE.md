@@ -1,8 +1,3 @@
-
-## Docs writing
-
-When writing or rewriting technical docs (README, runbook, procedure, error message, release notes, incident report, API guide): invoke the `simple-english` skill (ASD-STE100). Default **pragmatic** mode. Skip for chat replies, marketing, and code unless asked.
-
 ## Docstrings
 
 When writing or rewriting any module, class, or public-function docstring summary line: invoke the `writing-docstring-summaries` skill first. This is the default — no need to ask.
