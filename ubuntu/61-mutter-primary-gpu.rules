@@ -1,0 +1,6 @@
+# Make the NVIDIA RTX 4060 (10de:28e0) GNOME's primary render GPU.
+# Reason: with Intel as primary, frames for the HDMI monitor go through
+# mutter 46's secondary-GPU copy path, which crashes gnome-shell (NULL buffer
+# in meta_onscreen_native_swap_buffers_with_damage) when the monitor drops out.
+# Install, undo and other fixes: ubuntu/gnome-crash-laptop.md
+SUBSYSTEM=="drm", ENV{DEVTYPE}=="drm_minor", ENV{DEVNAME}=="/dev/dri/card[0-9]*", SUBSYSTEMS=="pci", ATTRS{vendor}=="0x10de", ATTRS{device}=="0x28e0", TAG+="mutter-device-preferred-primary"
