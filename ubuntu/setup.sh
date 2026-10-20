@@ -1,8 +1,9 @@
 #!/bin/bash
 #
 # Machine setup for Ubuntu 24.04: packages, dev tools, desktop apps,
-# thumb-button scroll mapping for every physical mouse currently plugged in, and
-# brightness keys that change the monitor under the cursor.
+# thumb-button scroll mapping for every physical mouse currently plugged in,
+# brightness keys that change the monitor under the cursor, and a big red mouse
+# cursor.
 #
 # Best-effort: no `set -e`, so one broken install does not abort the rest, and
 # every failure is listed at the end.
@@ -18,6 +19,8 @@
 #   KEYS=numpad ./setup.sh brightness   # numpad 8/5, not Fn keys + numpad +/-
 #   STEP=5 ./setup.sh brightness        # 5% per press, not 10%
 #   ./setup.sh astra                    # Astra Monitor: 5070 Ti VRAM in the top bar
+#   ./setup.sh cursor                   # red cursor, black outline, 48 px
+#   SIZE=64 ./setup.sh cursor           # 24, 32, 48, 64 or 96 px
 #
 set -uo pipefail
 
@@ -43,9 +46,9 @@ SECTION="${1:-all}"
 run_section() { [ "$SECTION" = all ] || [ "$SECTION" = "$1" ]; }
 
 case "$SECTION" in
-all | apps | scroll | brightness | astra) ;;
+all | apps | scroll | brightness | astra | cursor) ;;
 *)
-	echo "Usage: $0 [all|apps|scroll|brightness|astra]" >&2
+	echo "Usage: $0 [all|apps|scroll|brightness|astra|cursor]" >&2
 	exit 1
 	;;
 esac
@@ -70,6 +73,15 @@ if ! [[ "${STEP:-10}" =~ ^[1-9][0-9]?$|^100$ ]]; then
 	echo "STEP must be 1..100, got '$STEP'" >&2
 	exit 1
 fi
+
+# Yaru ships these cursor sizes only.
+case "${SIZE:-48}" in
+24 | 32 | 48 | 64 | 96) ;;
+*)
+	echo "SIZE must be 24, 32, 48, 64 or 96, got '$SIZE'" >&2
+	exit 1
+	;;
+esac
 
 say() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 
@@ -565,4 +577,37 @@ if run_section astra; then
 		echo "no session bus (ssh/tty?), skipping; run it later from a desktop session:"
 		echo "  $HERE/astra-monitor.sh"
 	fi
+fi
+
+####################################################################### cursor
+# Red mouse cursor with a black outline, SIZE px (default 48; GNOME default 24).
+# red-cursor.py copies the Yaru cursors into ~/.icons/Yaru-Red and recolors
+# them: the black fill turns red, the white outline turns black. libXcursor
+# reads ~/.icons, so Xorg apps (Chromium, Electron) see the theme as well.
+# Apps that are already open keep the old cursor until they restart.
+if run_section cursor; then
+	SIZE="${SIZE:-48}"
+	CURSOR_THEME=Yaru-Red
+
+	say "Building $CURSOR_THEME in ~/.icons"
+	python3 -I "$HERE/red-cursor.py" /usr/share/icons/Yaru "$HOME/.icons/$CURSOR_THEME" "$CURSOR_THEME"
+
+	say "Setting the cursor to $CURSOR_THEME, $SIZE px"
+	if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v gsettings >/dev/null; then
+		gsettings set org.gnome.desktop.interface cursor-theme "$CURSOR_THEME"
+		gsettings set org.gnome.desktop.interface cursor-size "$SIZE"
+		echo "theme $(gsettings get org.gnome.desktop.interface cursor-theme), size $(gsettings get org.gnome.desktop.interface cursor-size)"
+	else
+		echo "no session bus (ssh/tty?), skipping; run it later from a desktop session:"
+		echo "  SIZE=$SIZE $HERE/setup.sh cursor"
+	fi
+
+	cat <<EOF
+
+Theme        : ~/.icons/$CURSOR_THEME
+Resize       : SIZE=64 ./setup.sh cursor   (24, 32, 48, 64, 96)
+Undo         : gsettings reset org.gnome.desktop.interface cursor-theme
+               gsettings reset org.gnome.desktop.interface cursor-size
+EOF
+
 fi

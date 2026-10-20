@@ -122,6 +122,26 @@ The first press on an external monitor takes about 3 seconds. The script finds t
 | Keys do nothing on the lock screen | This is expected. The GNOME lock screen takes all keys. |
 | Disable | Delete the "Brightness ... (workflow-helper)" shortcuts in Settings > Keyboard > Custom Shortcuts. |
 
+### Red mouse cursor
+
+This section makes the mouse cursor red with a black outline. The default size is 48 px. The GNOME default is 24 px.
+
+```bash
+./ubuntu/setup.sh cursor            # red cursor, 48 px
+SIZE=64 ./ubuntu/setup.sh cursor    # 24, 32, 48, 64 or 96
+```
+
+The script [`ubuntu/red-cursor.py`](ubuntu/red-cursor.py) copies the Ubuntu Yaru cursors to `~/.icons/Yaru-Red`. It changes the black fill to red and the white outline to black. The shadow stays black.
+
+Apps that are open keep the old cursor until you restart them. Some apps need a new login.
+
+To go back to the Ubuntu cursor, run:
+
+```bash
+gsettings reset org.gnome.desktop.interface cursor-theme
+gsettings reset org.gnome.desktop.interface cursor-size
+```
+
 | Topic | File |
 |---|---|
 | Desktop on the iGPU, CUDA on the 5070 Ti, VRAM in the top bar | [`ubuntu/gpu.md`](ubuntu/gpu.md) |
