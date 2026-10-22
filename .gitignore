@@ -1,3 +1,4 @@
 .DS_Store
 ubuntu/log/
 *.exe
+__pycache__/
