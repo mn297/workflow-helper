@@ -26,6 +26,7 @@ Installs [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd
 |---|---|
 | tmux config: resize repaint, mouse copy to clipboard | [`ubuntu/tmux.conf`](ubuntu/tmux.conf) |
 | Cursor keybindings, `settings.json`, extensions, allowlist | [`ubuntu/cursor/`](ubuntu/cursor/) |
+| Spec format for agent plus human: outline, EARS requirements, test and decision tables, Mermaid rules | [`spec-format.md`](spec-format.md) |
 
 ## Isaac Sim
 
