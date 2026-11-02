@@ -2,7 +2,9 @@
     "terminal.integrated.commandsToSkipShell": [
         "workbench.action.toggleSidebarVisibility",
         "workbench.action.toggleAuxiliaryBar",
+        "workbench.files.action.collapseExplorerFolders",
         "workbench.action.terminal.focus",
-        "workbench.action.closePanel"
+        "workbench.action.closePanel",
+        "runCommands"
     ]
 }
