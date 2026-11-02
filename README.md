@@ -40,6 +40,31 @@ Building 6.x from source on Ubuntu 24.04:
 | NVIDIA 580 driver (RTX needs >= 550.90.07) | [`ubuntu/isaacsim_nvidia_driver.sh`](ubuntu/isaacsim_nvidia_driver.sh) |
 | Headless physics smoke test | [`ubuntu/isaacsim_smoke.py`](ubuntu/isaacsim_smoke.py) |
 
+## Adobe Acrobat Reader
+
+[`ubuntu/acrobat-reader.sh`](ubuntu/acrobat-reader.sh) installs Adobe Acrobat Reader DC under Wine. It needs no sudo, because Wine comes from the WineHQ Flatpak, installed for the current user.
+
+```bash
+./ubuntu/acrobat-reader.sh                  # install; keeps a finished install
+./ubuntu/acrobat-reader.sh --replace        # wipe the install and reinstall
+./ubuntu/acrobat-reader.sh uninstall        # keeps the Wine Flatpak
+LOGPIXELS=144 ./ubuntu/acrobat-reader.sh    # UI scale: 96 = 100 %, 192 = 200 %
+```
+
+Open a PDF with `acroread file.pdf`, with the "Adobe Acrobat Reader DC" menu entry, or with Open With in the file manager. To make Reader the default PDF app, run `xdg-mime default acroread.desktop application/pdf`.
+
+The script pins Reader 2020.013.20074, because newer builds break under Wine. It follows the recipe of the community [acrordrdc snap](https://github.com/mmtrt/acrordrdc-snap). The Wine prefix, the folder that holds the Windows install, is `~/.var/app/org.winehq.Wine/data/acrordr` (1.2 GB). Without `LOGPIXELS`, the script reads the DPI of the primary screen. It picks 100 % below 192 dpi, 200 % from 192 dpi, and 300 % from 288 dpi.
+
+> **Warning:** Reader 2020 gets no security updates. Its protected mode, the Windows sandbox for PDF code, is off, because it crashes under Wine. The Flatpak shows Reader only Documents, Desktop, Downloads, Music, Pictures, Videos and the files you open with it, but Reader still has network access. Open only PDFs you trust.
+
+The launcher [`ubuntu/acrobat-reader/acroread`](ubuntu/acrobat-reader/acroread) opens a second PDF as a tab in the running Reader. A wineserver is the Wine process that holds one prefix together, and two wineservers on one prefix can corrupt it. Each `flatpak run` has its own `/tmp` and its own process IDs, so a plain second launch starts a second wineserver. The launcher shares the wineserver socket folder and joins the process ID namespace of the running Reader.
+
+| Problem | Fix |
+|---|---|
+| `Reader or its wineserver runs on ...` | Close Reader, wait 3 seconds, and run the script again. |
+| Reader hangs and does not close | `flatpak kill org.winehq.Wine`. This stops every app in the Wine Flatpak. |
+| UI too small or too large | `LOGPIXELS=144 ./ubuntu/acrobat-reader.sh`, then restart Reader. |
+
 ## Ubuntu
 
 On a fresh machine, one command installs git, clones this repo to `~/workflow-helper`, and then runs

@@ -1,0 +1,65 @@
+#!/bin/bash
+# Open Adobe Acrobat Reader DC under the WineHQ Flatpak, optionally on one PDF.
+#
+# Installed by ubuntu/acrobat-reader.sh. The Wine prefix lives at
+# ~/.var/app/org.winehq.Wine/data/acrordr; ACROREAD_PREFIX picks another one
+# (a path inside the sandbox, /var/data/<name>).
+# --file-forwarding passes the PDF through the Flatpak document portal, so a
+# file outside the folders the sandbox can see still opens.
+
+prefix="${ACROREAD_PREFIX:-/var/data/acrordr}"
+exe='C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe'
+
+# Wine takes Windows paths, so winepath converts the portal path inside the sandbox.
+inner='exe=$1; shift
+if [ $# -gt 0 ]; then exec wine "$exe" "$(winepath -w "$1")"; fi
+exec wine "$exe"'
+
+args=()
+[ $# -gt 0 ] && args=(@@ "$1" @@)
+
+# Two wineservers on one prefix can corrupt it, so a second launch must reach
+# the running one. Each flatpak run has a private /tmp (where wineserver keeps
+# its socket) and a private PID namespace (wineserver tracks clients by PID).
+# Binding the socket dir and joining the running sandbox's PID namespace fixes both.
+sockdir="/tmp/.wine-$(id -u)"
+mkdir -p "$sockdir" && chmod 700 "$sockdir"
+
+# Serialize launches until Reader is up, so files opened together share one wineserver.
+exec 9>"$sockdir/acroread.lock"
+flock -w 60 9
+
+# Find a process of this prefix: Reader itself, or a wineserver that has not exited yet.
+find_parent() {
+	local pid
+	for pid in $(pgrep -x AcroRd32.exe) $(pgrep -x wineserver); do
+		if tr '\0' '\n' <"/proc/$pid/environ" 2>/dev/null | grep -qx "WINEPREFIX=$prefix"; then
+			echo "$pid"
+			return
+		fi
+	done
+}
+
+parent=$(find_parent)
+share=()
+[ -n "$parent" ] && share=(--parent-pid="$parent" --parent-share-pids)
+
+flatpak run --user --file-forwarding "${share[@]}" \
+	--filesystem="$sockdir" \
+	--env=WINEPREFIX="$prefix" \
+	--env=WINEDLLOVERRIDES="mscoree,mshtml=" \
+	--env=WINEDEBUG=-all \
+	--command=sh org.winehq.Wine//stable-26.08 -c "$inner" sh "$exe" "${args[@]}" 9>&- &
+child=$!
+
+# On a cold start, hold the lock until Reader runs (up to 60 s).
+if [ -z "$parent" ]; then
+	for _ in $(seq 120); do
+		[ -n "$(find_parent)" ] && break
+		kill -0 "$child" 2>/dev/null || break
+		sleep 0.5
+	done
+fi
+flock -u 9
+exec 9>&-
+wait "$child"
