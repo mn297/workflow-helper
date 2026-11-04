@@ -2,12 +2,12 @@
 //   mkdir -p ~/.config/Cursor/User
 //   cp ~/workflow-helper/ubuntu/cursor/keybindings.json ~/.config/Cursor/User/keybindings.json
 // Merge ubuntu/cursor/settings.json into ~/.config/Cursor/User/settings.json
-//   (commandsToSkipShell so Ctrl+B, Ctrl+I, and Ctrl+Shift+Q are not eaten by the terminal.
-//    Ctrl+I is ASCII Tab; without skip-shell the terminal inserts a tab).
-// Also set vim.handleKeys "<C-i>": false, "<C-`>": false, "<C-b>": false (see vim_vsc.json).
-// Focus: Ctrl+I toggle chat panel | Ctrl+L focus/add | Ctrl+B explorer | Ctrl+Shift+Q collapse folders | Ctrl+Alt+S agent sidebar | Ctrl+1 editor 1 | Ctrl+2 editor 2 | Ctrl+3 terminal | Ctrl+` toggle terminal (close returns to the editor that had focus)
+//   (commandsToSkipShell so Ctrl+B, Ctrl+Shift+I, and Ctrl+Shift+Q are not eaten by the terminal).
+// Also set vim.handleKeys "<C-`>": false, "<C-b>": false (see vim_vsc.json). Ctrl+I stays with Vim.
+// Focus: Ctrl+Shift+I toggle chat panel | Ctrl+L focus/add | Ctrl+B explorer | Ctrl+Shift+Q collapse folders | Ctrl+Alt+S agent sidebar | Ctrl+1 editor 1 | Ctrl+2 editor 2 | Ctrl+3 terminal | Ctrl+` toggle terminal (close returns to the editor that had focus)
 [
-    // Ctrl+I toggles chat panel visibility. Ctrl+L stays focus/add.
+    // Ctrl+Shift+I toggles chat panel visibility. Ctrl+L stays focus/add.
+    // Ctrl+I is left to Vim (jump forward, the pair of Ctrl+O).
     {
         "key": "ctrl+i",
         "command": "-composerMode.agent"
@@ -17,9 +17,15 @@
         "command": "-workbench.action.toggleUnifiedSidebarFromKeyboard"
     },
     {
-        "key": "ctrl+i",
+        "key": "ctrl+shift+i",
         "command": "workbench.action.toggleAuxiliaryBar",
         "when": "true"
+    },
+    // Cursor's own Ctrl+I bindings beat the Vim extension's; this hands Ctrl+I to Vim in the editor.
+    {
+        "key": "ctrl+i",
+        "command": "extension.vim_ctrl+i",
+        "when": "editorTextFocus && vim.active && vim.use<C-i> && !inDebugRepl"
     },
     // Ctrl+B toggles left sidebar (explorer) from ANY focus
     {

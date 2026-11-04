@@ -17,15 +17,16 @@ grep -v '^#' ~/workflow-helper/ubuntu/cursor/extensions.txt | while read -r ext;
 done
 ```
 
-`commandsToSkipShell` must include `toggleSidebarVisibility` (Ctrl+B), `toggleAuxiliaryBar` (Ctrl+I), and `collapseExplorerFolders` (Ctrl+Shift+Q). If they are missing, the terminal eats those keys. Ctrl+I is ASCII Tab.
+`commandsToSkipShell` must include `toggleSidebarVisibility` (Ctrl+B), `toggleAuxiliaryBar` (Ctrl+Shift+I), and `collapseExplorerFolders` (Ctrl+Shift+Q). If they are missing, the terminal eats those keys.
 
-Also set `vim.handleKeys` `"<C-i>"`, `"<C-`>"`, `"<C-b>"` to `false`. See [`vim_vsc.json`](../../vim_vsc.json).
+Also set `vim.handleKeys` `"<C-`>"` and `"<C-b>"` to `false`. Leave `<C-i>` to Vim: it jumps forward, the pair of Ctrl+O. See [`vim_vsc.json`](../../vim_vsc.json).
 
 ## Keys
 
 | Key | Action |
 |---|---|
-| Ctrl+I | chat panel (toggle; also works in terminal) |
+| Ctrl+Shift+I | chat panel (toggle; also works in terminal) |
+| Ctrl+O / Ctrl+I | Vim jump back / forward (after `gd`) |
 | Ctrl+L | chat (focus / add) |
 | Ctrl+B | explorer / left sidebar (toggle; also works in terminal) |
 | Ctrl+Shift+Q | collapse explorer folders (also works in terminal) |
