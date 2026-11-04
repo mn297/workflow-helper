@@ -172,7 +172,7 @@ gsettings reset org.gnome.desktop.interface cursor-size
 
 | Topic | File |
 |---|---|
-| Desktop on the iGPU, CUDA on the 5070 Ti, VRAM in the top bar | [`ubuntu/gpu.md`](ubuntu/gpu.md) |
+| Desktop on the iGPU, CUDA on the 5070 Ti, VRAM in the top bar, `gpuclean` when the desktop turns slow | [`ubuntu/gpu.md`](ubuntu/gpu.md) |
 | Slow second monitor on the Legion 5 laptop (HDMI on the RTX 4060) | [`ubuntu/gpu-laptop.md`](ubuntu/gpu-laptop.md) |
 | GNOME session crash with the 4K HDMI monitor on the Legion 5 laptop (Wayland) | [`ubuntu/gnome-crash-laptop.md`](ubuntu/gnome-crash-laptop.md) |
 | Power, wake, hibernate | [`ubuntu/power.md`](ubuntu/power.md) |

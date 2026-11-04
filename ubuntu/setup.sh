@@ -137,6 +137,14 @@ if run_section apps; then
 		cat "$HERE/bash_history.sh" >>"$HOME/.bashrc"
 	fi
 
+	# gpuclean frees the display iGPU when the desktop turns slow; see gpu.md.
+	say "Installing the gpuclean alias"
+	if grep -q 'alias gpuclean=' "$HOME/.bashrc" 2>/dev/null; then
+		echo "already in ~/.bashrc"
+	else
+		printf '\nalias gpuclean=%s\n' "'python3 $HERE/gpu_clean.py'" >>"$HOME/.bashrc"
+	fi
+
 	say "Installing uv"
 	curl -LsSf https://astral.sh/uv/install.sh | sh
 

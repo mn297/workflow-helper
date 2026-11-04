@@ -62,3 +62,42 @@ Run this from a graphical login:
 The script is [`astra-monitor.sh`](astra-monitor.sh). It installs `monitor@astraext.github.io`, enables it, and points the GPU header at this card (`0000:01:00.0`, `10de:2c05`).
 
 If the desktop hitches every few seconds, raise `gpu-update` (seconds, range 1 to 10) or set `gpu-header-show` to `false`. The schema is `org.gnome.shell.extensions.astra-monitor`.
+
+## When the desktop turns slow
+
+The Radeon draws both monitors and composites every window. It has one graphics queue. When one app keeps that queue full, every window waits, including apps that draw on the 5070 Ti: their frames cross to the Radeon before they reach a monitor. While Cursor kept the Radeon busy, a browser frame took 1 ms to draw and waited 34 ms (median) to reach the screen.
+
+Run this in a terminal:
+
+```bash
+gpuclean
+```
+
+`gpuclean` runs [`gpu_clean.py`](gpu_clean.py). It does three things:
+
+1. It finds orphan headless browsers: headless Chrome or Chromium whose test script died, so systemd adopted them. They use RAM, not the GPU. One prompt kills them all (default yes).
+2. It measures for 3 seconds how much of the Radeon's graphics engine each app uses.
+3. For each app at 10 % or more, it asks y/N (default no):
+
+| Busy app | What `gpuclean` does |
+|---|---|
+| `cursor`, `Discord`, `opera`, `chrome` | Restarts only the GPU process of the app. The app starts a new one, and the windows flash and redraw. |
+| `vlc`, `spotify`, `totem`, `mpv`, `celluloid` | Closes the player. VLC with one screencast open used 15 %. |
+| `Xwayland` | Lists the X11 apps. Each frame of an X11 app is copied on the Radeon. Pause the app that animates: a WebGL tab, a video, a Rerun viewer. |
+| `gnome-shell` | Nothing. Its share falls when the other apps stop drawing. |
+
+Then it measures again and prints the available RAM before and after.
+
+Chromium starts a new GPU process each time the old one gets SIGTERM. The test killed it 4 times in a row. Cursor and Discord are Electron apps on the same Chromium code, but the restart is untested on them. If a Cursor window stays black, restart Cursor. A Cursor restart ends every terminal in Cursor, and any Claude Code session in them.
+
+To measure only, without prompts:
+
+```bash
+python3 ~/workflow-helper/ubuntu/gpu_load.py 3     # per-app share of every GPU engine, from /proc/<pid>/fdinfo
+```
+
+`./ubuntu/setup.sh apps` adds the alias to `~/.bashrc`. To add it by hand:
+
+```bash
+echo "alias gpuclean='python3 ~/workflow-helper/ubuntu/gpu_clean.py'" >> ~/.bashrc
+```
