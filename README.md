@@ -30,7 +30,7 @@ Installs [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd
 
 ## Isaac Sim
 
-See [`ubuntu/isaacsim.md`](ubuntu/isaacsim.md). Sysctl file: [`ubuntu/99-inotify.conf`](ubuntu/99-inotify.conf).
+See [`ubuntu/isaacsim.md`](ubuntu/isaacsim.md): fresh-Ubuntu install of Isaac Sim 6.2 + Isaac Lab 3.0 first. Sysctl file: [`ubuntu/99-inotify.conf`](ubuntu/99-inotify.conf).
 
 Building 6.x from source on Ubuntu 24.04:
 

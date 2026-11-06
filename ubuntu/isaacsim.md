@@ -1,5 +1,78 @@
 # Isaac Sim
 
+## Install Isaac Sim 6.2 and Isaac Lab 3.0 on a fresh Ubuntu
+
+The latest releases are Isaac Sim 6.2.0 and Isaac Lab v3.0.0 (commit `e3f7d9f`,
+2026-10-19). They are made to work together. Isaac Lab runs on the Python that
+ships inside Isaac Sim, so you need no conda, venv or pixi for it.
+
+Known to work: Ubuntu 26.04, RTX 5070 Ti, driver 580.178.04, with Isaac Sim
+6.1.0 and an Isaac Lab 3.0 pre-release. The steps for 6.2.0 have not run end to
+end on a fresh machine. Isaac Lab 3.0 needs glibc 2.35 or later, so Ubuntu
+22.04 or later.
+
+`isaacsim_install.sh` installs 6.1.0 into a plain `~/isaacsim` folder. The steps
+below put each version in its own folder and point the link `~/isaacsim` at one.
+To go back, point the link at the old folder.
+
+```bash
+# 0. NVIDIA driver. RTX needs 550.90.07 or later; 580 is recommended.
+#    Skip this step if nvidia-smi already lists the GPU.
+sudo ubuntu-drivers install            # or: sudo apt install nvidia-driver-580
+sudo reboot
+nvidia-smi
+
+# 1. System tools and inotify limits (see "inotify limits" below)
+sudo apt update
+sudo apt install -y git git-lfs curl unzip build-essential cmake
+sudo cp ~/workflow-helper/ubuntu/99-inotify.conf /etc/sysctl.d/99-inotify.conf
+sudo sysctl --system
+
+# 2. Isaac Sim 6.2.0: a 13 GB download, about 30 GB unzipped
+cd ~/Downloads
+curl -L -C - -O https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.2.0-linux-x86_64.zip
+unzip -tq isaac-sim-standalone-6.2.0-linux-x86_64.zip       # prints "No errors detected"
+mkdir ~/isaacsim-6.2.0
+unzip -q isaac-sim-standalone-6.2.0-linux-x86_64.zip -d ~/isaacsim-6.2.0
+cat ~/isaacsim-6.2.0/VERSION
+# If ~/isaacsim is an old install folder (not a link), rename it first:
+#   mv ~/isaacsim ~/isaacsim-6.1.0
+ln -sfn ~/isaacsim-6.2.0 ~/isaacsim
+~/isaacsim/post_install.sh
+
+# 2b. Ubuntu 26.04 only. 26.04 ships libxml2.so.16 only, but the FBX SDK of the
+#     asset converter links libxml2.so.2, so the converter and the asset importer
+#     fail to load. The .so.16 next to the FBX SDK exports every symbol it uses.
+for d in ~/isaacsim/extscache/omni.kit.asset_converter-*/asset_converter_native_bindings/libs; do
+  [ -e "$d/libxml2.so.2" ] || ln -s libxml2.so.16 "$d/libxml2.so.2"
+done
+
+# 3. Isaac Lab v3.0.0, linked to Isaac Sim and installed into its Python (about 10 min)
+git clone --branch v3.0.0 https://github.com/isaac-sim/IsaacLab.git ~/IsaacLab
+cd ~/IsaacLab
+ln -sfn ~/isaacsim _isaac_sim
+env -u PYTHONPATH ./isaaclab.sh -i 'rl[rsl-rl]'   # core modules plus RSL-RL; plain -i adds no extras
+
+# 4. Check: open an empty stage in a Kit window, then close the window
+env -u PYTHONPATH ./isaaclab.sh -p scripts/tutorials/00_sim/create_empty.py
+```
+
+Notes:
+
+- Run your own scripts with `env -u PYTHONPATH ~/IsaacLab/isaaclab.sh -p your_script.py`.
+  Add `--viz kit` for the window; with no flag the run is headless.
+- `env -u PYTHONPATH` keeps a ROS or other Python path out of Isaac Sim's Python.
+- `isaaclab.sh` warns that it is deprecated in favour of `uv run isaaclab`. It
+  still works in 3.0.
+- The first start takes a few minutes while Kit builds its shader cache.
+- Kit logs `No space left on device for creating change watches` when the
+  inotify limits are too low. Step 1 sets them.
+- Isaac Lab inside a repo: add it as a git submodule at the tag, and link
+  `_isaac_sim` the same way.
+
+Sources: [Isaac Sim 6.2 GA](https://forums.developer.nvidia.com/t/isaac-sim-6-2-general-availability/386512),
+[Isaac Lab 3.0 installation](https://docs.nvidia.com/isaaclab/3.0/isaac-lab/installation).
+
 ## inotify limits
 
 Isaac Sim watches many files. Copy the sysctl file. Then load it:
