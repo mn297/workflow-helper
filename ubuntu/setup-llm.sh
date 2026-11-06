@@ -278,6 +278,19 @@ if run_section skills; then
 		run_maybe_tty claude plugin marketplace add anthropics/claude-plugins-official
 		run_maybe_tty claude plugin install mattpocock-skills@claude-plugins-official
 
+		say "Installing pyright and the Claude pyright-lsp plugin"
+		# The plugin turns on Claude's built-in LSP tool (definitions, references,
+		# call hierarchy) and sends pyright diagnostics after each edit. It runs
+		# pyright-langserver, which must be on the PATH of the shell that starts claude.
+		if ! command -v pyright-langserver >/dev/null; then
+			if command -v npm >/dev/null; then
+				npm install --global pyright
+			else
+				echo "npm not on PATH, skipping pyright; install Node, then: npm install --global pyright"
+			fi
+		fi
+		run_maybe_tty claude plugin install pyright-lsp@claude-plugins-official
+
 		say "Removing Claude plugins the local hook and Context7 MCP replace"
 		for plugin in caveman@caveman context7@context7-marketplace; do
 			if claude plugin list 2>/dev/null | grep -q "$plugin"; then

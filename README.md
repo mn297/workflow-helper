@@ -14,7 +14,7 @@ git config --global alias.lol "log --oneline --graph --decorate --all"
 ~/workflow-helper/ubuntu/setup-llm.sh
 ```
 
-Installs [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd](https://github.com/ayghri/i-have-adhd), and [Context7](https://github.com/upstash/context7) (`ctx7` CLI + MCP), then links the repo skills in [`skills/`](skills/) (docstring summaries, explaining new topics, plain paper notes, grounded primer, human maintainer pass, project docs layout, explainer films). [Caveman](https://github.com/JuliusBrussee/caveman) skills install for Cursor and Codex. Claude Code gets `caveman-commit` plus the local hook in [`ubuntu/claude/hooks/caveman.sh`](ubuntu/claude/hooks/caveman.sh), not the caveman plugin. It also installs the status line [`ubuntu/claude/statusline-command.sh`](ubuntu/claude/statusline-command.sh): `Opus | 45k/1.0M ctx | xhigh`. Claude plugins are simple-english, i-have-adhd, and mattpocock-skills. Context7 on Claude is MCP only. Set `CONTEXT7_API_KEY` or reuse the key already in `~/.cursor/mcp.json` / `~/.claude.json`. [RTK](https://github.com/rtk-ai/rtk) is optional.
+Installs [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd](https://github.com/ayghri/i-have-adhd), and [Context7](https://github.com/upstash/context7) (`ctx7` CLI + MCP), then links the repo skills in [`skills/`](skills/) (docstring summaries, explaining new topics, plain paper notes, grounded primer, human maintainer pass, project docs layout, explainer films). [Caveman](https://github.com/JuliusBrussee/caveman) skills install for Cursor and Codex. Claude Code gets `caveman-commit` plus the local hook in [`ubuntu/claude/hooks/caveman.sh`](ubuntu/claude/hooks/caveman.sh), not the caveman plugin. It also installs the status line [`ubuntu/claude/statusline-command.sh`](ubuntu/claude/statusline-command.sh): `Opus | 45k/1.0M ctx | xhigh`. Claude plugins are simple-english, i-have-adhd, mattpocock-skills, and pyright-lsp. pyright-lsp turns on Claude's built-in `LSP` tool (definitions, references, call hierarchy, and pyright errors after each edit); the script installs its `pyright-langserver` with `npm install --global pyright`. [`ubuntu/claude/CLAUDE.md`](ubuntu/claude/CLAUDE.md) makes it the first tool for code questions. Context7 on Claude is MCP only. Set `CONTEXT7_API_KEY` or reuse the key already in `~/.cursor/mcp.json` / `~/.claude.json`. [RTK](https://github.com/rtk-ai/rtk) is optional.
 
 ```bash
 ./ubuntu/setup-llm.sh          # skills / plugins (default)
@@ -26,7 +26,8 @@ Installs [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish), [i-have-adhd
 |---|---|
 | tmux config: resize repaint, mouse copy to clipboard | [`ubuntu/tmux.conf`](ubuntu/tmux.conf) |
 | Cursor keybindings, `settings.json`, extensions, allowlist | [`ubuntu/cursor/`](ubuntu/cursor/) |
-| Spec format for agent plus human: outline, EARS requirements, test and decision tables, Mermaid rules | [`spec-format.md`](spec-format.md) |
+| Spec format in step chapters (current): change at a glance, step map, one chapter per step with files, requirements, tests and gate | [`spec-format-steps.md`](spec-format-steps.md) |
+| Spec format by section (older): outline, EARS requirements, test and decision tables, Mermaid rules | [`spec-format.md`](spec-format.md) |
 
 ## Isaac Sim
 
