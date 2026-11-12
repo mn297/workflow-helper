@@ -13,8 +13,8 @@ description: >
   resources and collect them to a folder", or "what did we do versus engine
   Y". Make sure to use this skill
   even when the user names no folder and no chapter list. Propose both.
-  For one chat explanation use mn-explaining-new-topics. For notes on one
-  paper use mn-writing-plain-paper-notes.
+  For one chat explanation use mn-explaining-new-topics. For one paper
+  (notes, a trace or a full rewrite) use mn-paper-rewrite.
 compatibility: claude-code
 metadata:
   tags: "Teaching, Tutorial, Curriculum, Math, Subagents, Research"

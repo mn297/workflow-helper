@@ -4,9 +4,8 @@ description: >
   Explain a concept, paper, method or tool internal that is new to the user, in
   chat, as a mechanism traced step by step with real numbers. Use when the user
   asks to understand an unfamiliar idea ("help me understand", "I don't get it",
-  "walk me through", "how does X work"). For plain notes on a paper saved as a
-  file, use mn-writing-plain-paper-notes; for a paper's whole pipeline, use
-  mn-tracing-papers-end-to-end.
+  "walk me through", "how does X work"). For a paper (plain notes, a trace
+  of its pipeline, or a full rewrite), use mn-paper-rewrite.
 disable-model-invocation: true
 compatibility: claude-code cursor codex gemini-cli opencode
 metadata:
