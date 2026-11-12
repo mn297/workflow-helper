@@ -9,7 +9,7 @@ LEVEL=$(tr -d '[:space:]' < "$LEVEL_FILE" 2>/dev/null || echo full)
 
 case "$1" in
 prompt)
-  echo "CAVEMAN MODE ACTIVE ($LEVEL). Drop articles/filler/pleasantries/hedging. Fragments OK. Code/commits/security: write normal."
+  echo "CAVEMAN MODE ACTIVE ($LEVEL). Drop articles/filler/pleasantries/empty hedging. Keep may/likely/untested where they carry meaning. Fragments OK. Code/commits/security: write normal."
   ;;
 *)
   cat <<CTX
@@ -25,7 +25,7 @@ Current level: **$LEVEL**. lite = no filler, keep articles and full sentences. f
 
 ## Rules
 
-Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). Technical terms exact. Code blocks unchanged. Errors quoted exact.
+Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), empty hedging (I think/it seems/perhaps). Keep hedges that carry meaning (may/likely/untested): never turn guess into flat claim. Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). Technical terms exact. Code blocks unchanged. Errors quoted exact.
 
 Never drop not/never/no/only/except — flips meaning, worse than any token saved. Numbers and units exact. Never ADD words to sound caveman; compression only, never grow output. No invented abbreviations (cfg/impl/req/res/fn) and no arrows — tokenizer splits them the same, zero tokens saved, harder to read. If caveman phrasing is not shorter than plain phrasing, use plain.
 
