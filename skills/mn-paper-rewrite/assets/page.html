@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>⟦Method name, two to four words⟧</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="⟦One sentence: what the method does, rewritten in the order the data flows.⟧">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one 880px column. Every paper gets the same sections in the same order, so the reader learns where each thing sits. */
+:root {
+  --bg: #f5f7f5; --surface: #fcfcfb; --ink: #16201b; --ink-2: #4a554f; --ink-3: #69736d; --rule: #d9dfdb; --code-bg: #e9eeea;
+  --accent: #2a78d6; --on-accent: #ffffff;
+  /* One colour per kind of quantity, used in the ledger, the contracts and the diagrams. */
+  --k-input: #1f63b8; --k-given: #55615a; --k-hyper: #8a5a00; --k-learned: #5b49c2; --k-solved: #08707a; --k-derived: #8b4a1d; --k-output: #26732b;
+  --ok: #26732b; --warn: #8a5a00;
+  --f-display: "Archivo Narrow", "Arial Narrow", sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #111513; --surface: #191d1b; --ink: #eef2ef; --ink-2: #b7c0ba; --ink-3: #8d9791; --rule: #2f3632; --code-bg: #1d2421; --accent: #5b9cec; --on-accent: #0c1420; --k-input: #6aa6f0; --k-given: #a3aea8; --k-hyper: #e0b252; --k-learned: #a797f0; --k-solved: #52c8cb; --k-derived: #e0a070; --k-output: #7cc47f; --ok: #7cc47f; --warn: #e0b252; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #111513; --surface: #191d1b; --ink: #eef2ef; --ink-2: #b7c0ba; --ink-3: #8d9791; --rule: #2f3632; --code-bg: #1d2421; --accent: #5b9cec; --on-accent: #0c1420; --k-input: #6aa6f0; --k-given: #a3aea8; --k-hyper: #e0b252; --k-learned: #a797f0; --k-solved: #52c8cb; --k-derived: #e0a070; --k-output: #7cc47f; --ok: #7cc47f; --warn: #e0b252; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 var(--f-body); -webkit-text-size-adjust: 100%; }
+.wrap {
+  max-width: 880px; margin: 0 auto; display: grid; gap: 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 80px;
+}
+section, header { display: grid; gap: 14px; min-width: 0; }
+/* A grid column is as wide as its widest child unless told otherwise; this keeps a wide equation from widening the page. */
+.wrap, section, header, .fig, .ex, .pre, ul.plain, ol.plain, ol.steps { grid-template-columns: minmax(0, 1fr); }
+#stages { gap: 44px; }
+h1 { font: 700 clamp(2.1rem, 6vw, 3rem)/1.05 var(--f-display); margin: 0; text-wrap: balance; }
+h2 { font: 600 clamp(1.5rem, 4vw, 1.85rem)/1.15 var(--f-display); margin: 0; text-wrap: balance; }
+h3 { font: 600 1.2rem/1.2 var(--f-display); margin: 12px 0 0; text-wrap: balance; }
+p { margin: 0; max-width: 68ch; }
+ul.plain, ol.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 68ch; }
+a { color: var(--accent); }
+.lede { font-size: 1.12rem; }
+.note { color: var(--ink-2); font-size: 0.95rem; }
+.take { font-weight: 600; }
+.nav, .toc { font: 500 0.8rem/1.4 var(--f-mono); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.chain { font: 600 1rem/1.7 var(--f-mono); background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 14px; overflow-wrap: anywhere; }
+code { font: 0.84em var(--f-mono); background: var(--code-bg); padding: 0.06em 0.32em; border-radius: 3px; overflow-wrap: anywhere; }
+pre { margin: 0; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; overflow-x: auto; font: 0.8rem/1.55 var(--f-mono); max-width: 100%; }
+pre code { background: none; padding: 0; font-size: 1em; overflow-wrap: normal; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Where a statement comes from: the paper, the code, or the rewriter. */
+.src { font: 500 0.72rem/1.4 var(--f-mono); padding: 0.1em 0.45em; border-radius: 3px; border: 1px solid var(--rule); color: var(--ink-3); display: inline-block; max-width: 100%; overflow-wrap: anywhere; vertical-align: baseline; }
+.src.c { color: var(--k-solved); border-color: currentColor; }
+.src.m { color: var(--warn); border-color: currentColor; }
+.src.m.ok { color: var(--ok); }
+
+/* Kinds of quantity. The word is always printed; the colour only repeats it. */
+.k { font: 600 0.72rem/1.4 var(--f-mono); padding: 0.1em 0.45em; border-radius: 3px; border: 1px solid currentColor; white-space: nowrap; }
+.k.input { color: var(--k-input); } .k.given { color: var(--k-given); } .k.hyper { color: var(--k-hyper); } .k.learned { color: var(--k-learned); }
+.k.solved { color: var(--k-solved); } .k.derived { color: var(--k-derived); } .k.output { color: var(--k-output); }
+.kinds { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.86rem; color: var(--ink-2); }
+
+/* Equation boxes, their legends and their derivations. */
+.eq { overflow-x: auto; margin: 6px 0 0; padding: 8px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; }
+dl.vars { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; font-size: 0.92rem; margin: 0 0 8px; padding: 8px 14px; border-left: 3px solid var(--rule); }
+dl.vars dt { white-space: nowrap; }
+dl.vars dd { margin: 0; color: var(--ink-2); min-width: 0; }
+@media (max-width: 520px) { dl.vars { grid-template-columns: 1fr; gap: 0 } dl.vars dd { margin: 0 0 6px } }
+details.deriv { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); padding: 8px 14px; }
+details.deriv summary { cursor: pointer; font: 600 1rem/1.4 var(--f-display); }
+ol.steps { margin: 10px 0 4px; padding-left: 1.4em; display: grid; gap: 12px; }
+ol.steps .eq { background: var(--bg); margin: 0 0 4px; }
+ol.steps .why { font-size: 0.92rem; color: var(--ink-2); }
+.ex { display: grid; gap: 6px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; font-size: 0.95rem; }
+.ex b { font-family: var(--f-display); font-size: 1.02rem; }
+.glue { border-left: 3px solid var(--warn); padding: 6px 14px; background: var(--surface); border-radius: 0 6px 6px 0; font-size: 0.95rem; }
+.pre { border-left: 3px solid var(--accent); padding: 8px 14px; background: var(--surface); border-radius: 0 6px 6px 0; font-size: 0.95rem; display: grid; gap: 6px; }
+
+/* Tables */
+.tbl { overflow-x: auto; max-width: 100%; }
+table { border-collapse: collapse; font-size: 0.9rem; min-width: 480px; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 0.72rem/1.3 var(--f-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+td.skip { color: var(--ink-3); }
+table.contract tr[data-io="out"] td:first-child { font-weight: 600; }
+
+/* Figures */
+.fig { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px; min-width: 0; margin: 0; }
+.fig figcaption { font-size: 0.9rem; color: var(--ink-2); }
+.svgwrap { overflow-x: auto; max-width: 100%; }
+.svgwrap svg { width: 100%; min-width: 540px; height: auto; display: block; }
+svg text { font: 11px var(--f-mono); fill: var(--ink-2); }
+svg .lane { fill: var(--bg); stroke: var(--rule); } svg .lane-t { fill: var(--ink-3); font-weight: 600; letter-spacing: 0.06em; }
+svg .box { fill: var(--surface); stroke: var(--ink-3); stroke-width: 1.3; } svg .box-t { fill: var(--ink); font-weight: 600; font-size: 12px; }
+svg .flow { stroke: var(--ink-2); stroke-width: 1.4; fill: none; } svg .head { fill: var(--ink-2); }
+svg .q-input { fill: var(--k-input); } svg .q-given { fill: var(--k-given); } svg .q-hyper { fill: var(--k-hyper); } svg .q-learned { fill: var(--k-learned); }
+svg .q-solved { fill: var(--k-solved); } svg .q-derived { fill: var(--k-derived); } svg .q-output { fill: var(--k-output); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <!-- Only when the page sits in a project's docs folder: <nav class="nav"><a href="../index.html">Docs index</a></nav> -->
+  <h1>⟦Method name⟧</h1>
+  <p class="lede">⟦Two or three sentences: what goes in, what comes out, and the one idea that makes it work.⟧</p>
+  <p class="note">Rewrite of ⟦authors, title, venue and year⟧. Source read: ⟦arXiv id and version, or the PDF's name⟧, ⟦code repository at commit, or "no public code"⟧, on ⟦date⟧.</p>
+  <p class="note">Marks: <span class="src p">paper, with the place</span> <span class="src c">code, file:line</span> <span class="src m ok">mine, checked</span> <span class="src m">mine, unchecked</span></p>
+  <nav class="toc"><a href="#breath">One breath</a><a href="#system">System</a><a href="#example">Example</a><a href="#stages">Stages</a><a href="#objective">Objective</a><a href="#evidence">Evidence</a><a href="#gaps">Gaps</a><a href="#rebuild">Rebuild</a><!-- with an "ours" section: <a href="#ours">Ours</a> --><a href="#restate">Restate</a><a href="#ledger">Ledger</a><a href="#coverage">Coverage</a><a href="#open">Open</a></nav>
+</header>
+
+<section id="breath">
+  <h2>The whole thing in one breath</h2>
+  <p class="chain">⟦raw input⟧ → ⟦stage 1⟧ → ⟦stage 2⟧ → ⟦output⟧</p>
+  <p class="take">⟦One bold sentence: the purpose of the method.⟧</p>
+  <p class="note">Words used from here on: ⟦at most five terms that the chain above uses, each with its plain meaning in a few words. Every other term is defined where it is first needed.⟧</p>
+  <ul class="plain">
+    <li><b>New here:</b> ⟦the part this paper adds⟧ <span class="src p">⟦place⟧</span></li>
+    <li><b>Borrowed:</b> ⟦the parts taken from earlier work, each with its source⟧</li>
+    <li><b>You can skip:</b> ⟦a part that does not matter for the method, and why; or delete this line⟧</li>
+  </ul>
+</section>
+
+<section id="system">
+  <h2>The system</h2>
+  <p class="take">⟦One bold sentence: what runs, and what it is built on.⟧</p>
+  <figure class="fig">
+    <div class="svgwrap">
+      <!-- Lanes: once (preprocessing), loop (training or the solve), use (what runs on new data). One box per stage.
+           Each arrow carries the name and the shape of what flows. Colour a name by its kind with a q-* class. -->
+      <svg viewBox="0 0 760 250" role="img" aria-label="⟦The claim of the figure in one sentence.⟧">
+        <rect x="8" y="8" width="744" height="70" rx="6" class="lane"/><text x="18" y="26" class="lane-t">ONCE</text>
+        <rect x="8" y="90" width="744" height="70" rx="6" class="lane"/><text x="18" y="108" class="lane-t">LOOP</text>
+        <rect x="8" y="172" width="744" height="70" rx="6" class="lane"/><text x="18" y="190" class="lane-t">USE</text>
+        <rect x="120" y="24" width="150" height="40" rx="5" class="box"/><text x="195" y="49" text-anchor="middle" class="box-t">⟦stage 1⟧</text>
+        <line x1="270" y1="44" x2="440" y2="44" class="flow"/><polygon points="440,40 448,44 440,48" class="head"/>
+        <text x="355" y="36" text-anchor="middle" class="q-derived">⟦name (shape)⟧</text>
+        <rect x="448" y="24" width="150" height="40" rx="5" class="box"/><text x="523" y="49" text-anchor="middle" class="box-t">⟦stage 2⟧</text>
+      </svg>
+    </div>
+    <figcaption>⟦What the picture shows: the path of the data, and which parts are learned, solved or fixed.⟧</figcaption>
+  </figure>
+  <p class="kinds">Kinds: <span class="k input">input</span> <span class="k given">given</span> <span class="k hyper">hyper</span> <span class="k learned">learned</span> <span class="k solved">solved</span> <span class="k derived">derived</span> <span class="k output">output</span></p>
+  <h3>The method as one box</h3>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>Name</th><th>Shape</th><th>Unit, frame</th><th>Comes from</th></tr></thead>
+    <tbody>
+      <tr><td><span class="k input">input</span></td><td>⟦name⟧</td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>⟦sensor, dataset or user⟧</td></tr>
+      <tr><td><span class="k given">given</span></td><td>⟦name⟧</td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>⟦calibration, model, pretrained weights⟧</td></tr>
+      <tr><td><span class="k output">output</span></td><td>⟦name⟧</td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>⟦the stage that makes it⟧</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>What is unknown:</b> ⟦what the method learns or estimates, at what granularity, and how many values on the running example.⟧</p>
+  <p><b>When it runs:</b> ⟦offline or live, at what rate, on what hardware, and how long it takes.⟧ <span class="src p">⟦place⟧</span></p>
+</section>
+
+<section id="example">
+  <h2>The running example</h2>
+  <p class="take">⟦One bold sentence: the one case that travels through every stage, and where it comes from in the paper.⟧</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Quantity</th><th class="n">Value</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>⟦count, size or setting that the paper prints⟧</td><td class="n">⟦number and unit⟧</td><td><span class="src p">⟦place⟧</span></td></tr>
+      <tr><td>⟦a number from the released data, a config or your own run⟧</td><td class="n">⟦number and unit⟧</td><td><span class="src m ok">⟦mine, checked: checks.py::name⟧</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="stages">
+  <h2>The stages</h2>
+
+  <!-- One section.stage per stage, in the order the data flows. Copy this block. -->
+  <section class="stage" id="stage-1">
+    <h3>1. ⟦What the stage does, as a verb phrase⟧</h3>
+    <p class="take">⟦One bold sentence: the takeaway of the stage.⟧</p>
+    <div class="tbl"><table class="contract">
+      <thead><tr><th></th><th>Name</th><th>Shape</th><th>Unit, frame</th><th>Comes from, goes to</th></tr></thead>
+      <tbody>
+        <tr data-io="in" data-q="frames"><td>in</td><td>⟦name⟧ \(⟦symbol⟧\) <span class="k input">input</span></td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>⟦source⟧</td></tr>
+        <tr data-io="param" data-q="lambda"><td>knob</td><td>⟦name⟧ \(⟦symbol⟧\) <span class="k hyper">hyper</span></td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>⟦value, and where it is stated⟧</td></tr>
+        <tr data-io="out" data-q="tracks"><td>out</td><td>⟦name⟧ \(⟦symbol⟧\) <span class="k derived">derived</span></td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>⟦the stages that read it⟧</td></tr>
+      </tbody>
+    </table></div>
+    <p>⟦The mechanism in words, with a physical picture. Short paragraphs, one idea each.⟧ <span class="src p">⟦place⟧</span></p>
+    <p class="glue"><b>Glue fact.</b> ⟦A link the paper leaves unsaid, at the place it is first needed.⟧ <span class="src c">⟦file:line⟧</span></p>
+    <div class="pre"><p><b>You need: ⟦a concept the paper assumes⟧.</b> ⟦Three to five lines: only what this stage uses.⟧</p></div>
+    <pre><code>⟦The mechanism as 5 to 20 lines of code, the shape of each array in a comment.⟧</code></pre>
+    <div class="eq" id="eq-⟦n⟧">$$⟦The equation of this stage⟧$$</div>
+    <dl class="vars">
+      <dt>\(⟦symbol⟧\)</dt><dd>⟦meaning, unit, shape, where it comes from⟧</dd>
+    </dl>
+    <details class="deriv">
+      <summary>Derivation, ⟦N⟧ steps</summary>
+      <p>⟦What is derived, and why the stage needs it.⟧</p>
+      <ol class="steps">
+        <li><div class="eq s">$$⟦one move⟧$$</div><p class="why">⟦The move, by name.⟧ <span class="src m ok">⟦mine, checked: checks.py::name⟧</span></p></li>
+      </ol>
+    </details>
+    <div class="ex">
+      <p><b>In words.</b> ⟦What the equation says.⟧</p>
+      <p><b>On the running example.</b> ⟦The numbers of the example through this stage.⟧</p>
+      <p><b>Without this stage.</b> ⟦What breaks, and the paper's evidence for it.⟧ <span class="src p">⟦place⟧</span></p>
+    </div>
+  </section>
+
+  <section class="stage" id="stage-2">
+    <h3>2. ⟦What the stage does⟧</h3>
+    <p class="take">⟦One bold sentence.⟧</p>
+    <div class="tbl"><table class="contract">
+      <thead><tr><th></th><th>Name</th><th>Shape</th><th>Unit, frame</th><th>Comes from, goes to</th></tr></thead>
+      <tbody>
+        <tr data-io="in" data-q="tracks"><td>in</td><td>⟦name⟧ <span class="k derived">derived</span></td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>stage 1</td></tr>
+        <tr data-io="out" data-q="poses"><td>out</td><td>⟦name⟧ <span class="k output">output</span></td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>⟦the user⟧</td></tr>
+      </tbody>
+    </table></div>
+    <p>⟦The mechanism in words.⟧ <span class="src p">⟦place⟧</span></p>
+  </section>
+</section>
+
+<section id="objective">
+  <h2>What is compared to what</h2>
+  <p class="take">⟦One bold sentence: the objective. If nothing is optimised at use time, say so, and give the training objective.⟧</p>
+  <div class="eq" id="eq-loss">$$⟦The objective, term by term⟧$$</div>
+  <dl class="vars">
+    <dt>\(⟦symbol⟧\)</dt><dd>⟦meaning, unit, shape, where it comes from⟧</dd>
+  </dl>
+  <div class="ex">
+    <p><b>One number.</b> ⟦One term worked through on the running example.⟧</p>
+    <p><b>How an unknown reaches it.</b> ⟦The chain from one unknown to the objective, link by link, with every truncation, detach or clamp.⟧</p>
+  </div>
+</section>
+
+<section id="evidence">
+  <h2>What the evidence shows</h2>
+  <p class="take">⟦One bold sentence: what the results support, and what they do not.⟧</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Claim</th><th>Evidence</th><th>Against</th><th>My read</th></tr></thead>
+    <tbody><tr><td>"⟦the claim, quoted from the paper⟧" <span class="src p">⟦place⟧</span></td><td>⟦number and metric⟧ <span class="src p">⟦table or figure⟧</span></td><td>⟦baseline, data, held out or fit⟧</td><td>⟦supported, partly, or not shown, and why⟧</td></tr></tbody>
+  </table></div>
+  <p>⟦What each metric means in physical terms. What was not tested.⟧</p>
+</section>
+
+<section id="gaps">
+  <h2>What the paper leaves out</h2>
+  <ul class="plain">
+    <li><b>Unsaid.</b> ⟦A constant, a setting or a step that a rebuild needs and the paper does not give.⟧</li>
+    <li><b>Paper against code.</b> ⟦Where they disagree.⟧ <span class="src c">⟦file:line⟧</span></li>
+    <li><b>Can fake the result.</b> ⟦A confound, an evaluation on fit data, a weak baseline.⟧</li>
+  </ul>
+</section>
+
+<section id="rebuild">
+  <h2>Rebuild sheet</h2>
+  <ol class="plain">
+    <li><b>⟦Build this first.⟧</b> ⟦What it needs, and the check that tells you it works.⟧</li>
+  </ol>
+  <div class="tbl"><table>
+    <thead><tr><th>Knob</th><th class="n">Value</th><th>Stated in</th></tr></thead>
+    <tbody><tr><td>⟦name⟧</td><td class="n">⟦value⟧</td><td><span class="src p">⟦place⟧</span></td></tr></tbody>
+  </table></div>
+</section>
+
+<!-- Optional: <section id="ours"> how the method maps onto the project, and what we do differently. -->
+
+<section id="restate">
+  <h2>Restate check</h2>
+  <p>⟦"So basically ...": the whole pipeline in four to six lines.⟧</p>
+  <ul class="plain">
+    <li><b>Common wrong reading.</b> ⟦What a newcomer assumes⟧ <b>Not quite:</b> ⟦the correction⟧</li>
+  </ul>
+</section>
+
+<section id="ledger">
+  <h2>Ledger: every quantity accounted for</h2>
+  <div class="tbl"><table class="ledger">
+    <thead><tr><th>Name</th><th>Symbol</th><th>Kind</th><th>Shape</th><th>Unit</th><th>Comes from</th></tr></thead>
+    <tbody>
+      <tr data-q="frames" data-kind="input"><td>⟦name⟧</td><td>\(⟦symbol⟧\)</td><td><span class="k input">input</span></td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>⟦source⟧</td></tr>
+      <tr data-q="lambda" data-kind="hyper"><td>⟦name⟧</td><td>\(⟦symbol⟧\)</td><td><span class="k hyper">hyper</span></td><td>⟦shape⟧</td><td>⟦unit⟧</td><td>⟦value and place⟧</td></tr>
+      <tr data-q="tracks" data-kind="derived"><td>⟦name⟧</td><td>\(⟦symbol⟧\)</td><td><span class="k derived">derived</span></td><td>⟦shape⟧</td><td>⟦unit⟧</td><td><a href="#stage-1">stage 1</a></td></tr>
+      <tr data-q="poses" data-kind="output"><td>⟦name⟧</td><td>\(⟦symbol⟧\)</td><td><span class="k output">output</span></td><td>⟦shape⟧</td><td>⟦unit⟧</td><td><a href="#stage-2">stage 2</a></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="coverage">
+  <h2>Coverage: the paper, item by item</h2>
+  <div class="tbl"><table class="coverage">
+    <thead><tr><th>In the paper</th><th>Here</th></tr></thead>
+    <tbody>
+      <tr><td>⟦Eq. (n), Algorithm n, Fig. n, Table n or Sec. n⟧</td><td><a href="#stage-1">⟦stage 1⟧</a>⟦, and what of the item the page leaves out, if anything⟧</td></tr>
+      <tr><td>⟦an item left out⟧</td><td class="skip">skipped: ⟦the reason⟧</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="open">
+  <h2>Open questions</h2>
+  <ul class="plain">
+    <li>⟦What the source did not settle, and what would settle it.⟧</li>
+  </ul>
+  <p class="note">Also read: ⟦the part of each other paper followed for one hop, or "nothing else"⟧. Steps marked mine and unchecked: ⟦count⟧.</p>
+</section>
+
+</div>
+
+<!-- tex-svg, not tex-chtml: the CHTML build fetches fonts that a published page blocks. -->
+<script>window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]] }, svg: { fontCache: "global" } };</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+</body>
+</html>
