@@ -1,0 +1,11 @@
+[Unit]
+Description=Reset an xHCI USB controller when the kernel reports it dead
+After=systemd-journald.service
+
+[Service]
+ExecStart=/usr/local/sbin/xhci-watchdog
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

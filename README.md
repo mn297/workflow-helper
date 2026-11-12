@@ -179,4 +179,5 @@ gsettings reset org.gnome.desktop.interface cursor-size
 | Out-of-memory kill ends the GNOME session; `oom_fix.sh` keeps it alive, `memcap` caps a job's RAM | [`ubuntu/oom.md`](ubuntu/oom.md) |
 | Power, wake, hibernate | [`ubuntu/power.md`](ubuntu/power.md) |
 | mt7925e S3 resume | [`ubuntu/setup_mt7925e_unbind.sh`](ubuntu/setup_mt7925e_unbind.sh) |
+| A hung RealSense D455 stops the USB controller (xHCI "HC died") and the keyboard | [`ubuntu/usb-guard.md`](ubuntu/usb-guard.md) |
 | Shared bash history (`Ctrl+R`) | [`ubuntu/bash_history.sh`](ubuntu/bash_history.sh) |
