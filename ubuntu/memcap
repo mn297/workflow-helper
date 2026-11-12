@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# Run a command in its own cgroup with a RAM cap, so an out-of-memory kill ends that job, not the desktop.
+#
+#   memcap 40G pixi run trials --workers 16
+#   memcap 50% python train.py      # percent of physical RAM
+#
+# The job gets no swap, so it dies at the cap instead of pushing the desktop
+# into swap. OOMPolicy=kill ends every process of the job at once: a
+# multiprocessing.Pool that loses one worker otherwise waits forever for its
+# result. Exit code 137 means the cap killed the job.
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+	echo "usage: memcap SIZE COMMAND [ARGS...]   SIZE: 40G, 512M or 50%" >&2
+	exit 2
+fi
+size=$1
+shift
+exec systemd-run --user --scope --quiet \
+	-p MemoryMax="$size" -p MemorySwapMax=0 -p OOMPolicy=kill -- "$@"

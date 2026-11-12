@@ -176,6 +176,7 @@ gsettings reset org.gnome.desktop.interface cursor-size
 | Desktop on the iGPU, CUDA on the 5070 Ti, VRAM in the top bar, `gpuclean` when the desktop turns slow | [`ubuntu/gpu.md`](ubuntu/gpu.md) |
 | Slow second monitor on the Legion 5 laptop (HDMI on the RTX 4060) | [`ubuntu/gpu-laptop.md`](ubuntu/gpu-laptop.md) |
 | GNOME session crash with the 4K HDMI monitor on the Legion 5 laptop (Wayland) | [`ubuntu/gnome-crash-laptop.md`](ubuntu/gnome-crash-laptop.md) |
+| Out-of-memory kill ends the GNOME session; `oom_fix.sh` keeps it alive, `memcap` caps a job's RAM | [`ubuntu/oom.md`](ubuntu/oom.md) |
 | Power, wake, hibernate | [`ubuntu/power.md`](ubuntu/power.md) |
 | mt7925e S3 resume | [`ubuntu/setup_mt7925e_unbind.sh`](ubuntu/setup_mt7925e_unbind.sh) |
 | Shared bash history (`Ctrl+R`) | [`ubuntu/bash_history.sh`](ubuntu/bash_history.sh) |
