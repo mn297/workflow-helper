@@ -180,4 +180,5 @@ gsettings reset org.gnome.desktop.interface cursor-size
 | Power, wake, hibernate | [`ubuntu/power.md`](ubuntu/power.md) |
 | mt7925e S3 resume | [`ubuntu/setup_mt7925e_unbind.sh`](ubuntu/setup_mt7925e_unbind.sh) |
 | A hung RealSense D455 stops the USB controller (xHCI "HC died") and the keyboard | [`ubuntu/usb-guard.md`](ubuntu/usb-guard.md) |
+| `kros`: stop every ROS 2 and RealSense process, and show who holds the D455 (`kros -n` only lists) | [`ubuntu/kros.sh`](ubuntu/kros.sh) |
 | Shared bash history (`Ctrl+R`) | [`ubuntu/bash_history.sh`](ubuntu/bash_history.sh) |
