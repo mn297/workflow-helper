@@ -230,7 +230,7 @@ Same order as the catalog. Only skills I use.
 #### `how`, `why`, `teach`
 - `how`: onboarding-level answer (Overview, Key Concepts, How It Works, Where Things Live, Gotchas).
   Simple question = 1 agent; complex = 2-4 read-only explorers plus 1 explainer. Overlaps
-  codebase-memory and `mn-code-map`; use it for a quick chat answer.
+  `mn-code-map`; use it for a quick chat answer.
 - `why`: confidence-tiered history (Direct, Supported, Inferred, Speculative, Unknown) from git blame,
   `git log --follow`, `gh pr view`. Only the source-control investigator runs here (no Slack, Linear,
   Sentry MCPs). Good for "Why was X set to Y? Does the reason still hold?"

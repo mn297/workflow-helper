@@ -40,8 +40,6 @@ For structural questions about Python code, use the `LSP` tool first (pyright, f
 
 Use Grep or `rg` for literal strings, configs, logs, docs and non-Python files, and when the LSP finds nothing.
 
-codebase-memory-mcp is opt-in: use its graph only for big-picture questions (architecture, change impact across a large package), and check `index_status` first. Its index goes stale after moves and misses uncommitted files.
-
 ## Python environments
 
 Set up every Python environment with pixi (`pixi.toml`, `pixi install`, `pixi run`). When a repo ships conda instructions (`environment.yml`), translate them into a `pixi.toml`: take python, CUDA and pytorch from conda-forge, then add the remaining pip wheels and source builds as pypi dependencies. The user never uses conda.
