@@ -1,0 +1,8 @@
+{
+  "uuid": "pointer@workflow-helper",
+  "name": "Pointer position (workflow-helper)",
+  "description": "Tells scripts where the mouse pointer is over D-Bus, on Wayland and X11. Used by cursor-brightness.sh to change the monitor under the cursor.",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "url": "https://github.com/mn297/workflow-helper",
+  "version": 1
+}
