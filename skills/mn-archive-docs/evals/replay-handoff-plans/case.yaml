@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: replay-handoff-plans
+expected_outcome: |
+  Runs in a git worktree of tree_perception at commit 0312e131, the state before a
+  hand-checked cleanup (commit 5bbaac90 holds the reference result). The finished
+  handoffs and plans move to docs/handoff/archive/ and docs/plans/archive/, topic
+  subfolders move whole, live ones stay (isaac-freecam-source, orb-rgbd-inertial,
+  strand-tearing), every path in any form that pointed at a moved doc is rewritten,
+  both archives are hidden from ripgrep but reachable by explicit path, the docs
+  index and the agent note name the archives, links that were broken before the
+  move are reported, and nothing is committed or deleted.
