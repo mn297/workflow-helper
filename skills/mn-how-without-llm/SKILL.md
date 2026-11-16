@@ -6,8 +6,9 @@ description: >
   the files to edit by hand, gotchas, variations, undo, and where to look it up
   next time. Use when the user asks how to do, set up, install, configure, build
   or run something, or asks for "raw commands", "by hand", "without LLM", or
-  "how one would do it". For how a concept or system works, use
-  mn-explaining-new-topics.
+  "how one would do it". For a guided lab with real output and pitfalls at
+  each step, use mn-how-without-llm-detailed-lesson. For how a concept or
+  system works, use mn-explaining-new-topics.
 ---
 
 # How to do it without an LLM
