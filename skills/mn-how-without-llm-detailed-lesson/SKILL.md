@@ -25,7 +25,7 @@ Read `../mn-how-without-llm/SKILL.md` first. Its Rules apply here, except "Stay 
 3. **Break it on purpose.** Make two or three one-line changes that cause the mistakes people really make with this tool and input (a wrong extrinsic, a wrong topic, a wrong time unit, a wrong frame, a parameter of the wrong type). Record the signature of each: the log line, the number, the shape of the plot. Revert each one. Done when each break has a signature and the score is back.
 4. **Collect the confusions.** Read the tool's issue tracker, its FAQ and the dataset's README for what people get wrong. Keep the link for each.
 5. **Run the transfer task.** Run the same pipeline on a second sequence and keep the score, so the lab can give the number to hit. Where the second run needs a setting the first did not, that difference is the task: find the fix, confirm it with a rerun, and put it in the answers.
-6. **Write the lab** in the shape below, to `docs/lessons/<slug>.md` in the user's repo (next to `$LAB` when there is no repo). When your runs disprove a statement in an earlier lab, fix that text in place and link the station or log line that shows it.
+6. **Write the lab** in the shape below, to `docs/lessons/<slug>.md` in the user's repo (next to `$LAB` when there is no repo), and every script it runs to `docs/lessons/<slug>/` (see "Code beside the lab"). When your runs disprove a statement in an earlier lab, fix that text in place and link the station or log line that shows it.
 7. **Cold check.** Extract the lab's `bash` blocks, in order, into one script. Point `LAB` at a second empty directory that reuses `$DATA`, replace `pixi shell` with `eval "$(pixi shell-hook)"` so the script does not stop at an interactive shell, and run it. Compare every number the lab quotes with this output: only timings may differ, and a number the lab quotes as a range must fall inside it. Open every image the lab tells the reader to open. Done when every quoted number matches and the last checkpoint passes.
 8. **Reply in chat:** the path, the time the lab takes, what you did not run, and each fix to an earlier lab. When the user later pastes an output that differs, diagnose it and add the case to that station's "If you see".
 
@@ -70,7 +70,52 @@ Read `../mn-how-without-llm/SKILL.md` first. Its Rules apply here, except "Stay 
 - **Cues.** "Notice" names the lines and the numbers that separate healthy from broken. That is what the reader came for.
 - **Every line given.** The lab gives every line of code. The reader's work is the prediction, the run and the reading of the output.
 - **Spread.** A difference between two runs is a finding only when it is larger than the spread from step 2. Quote the spread beside it. Quote a number that moves between reruns of the same input as a range.
-- **Scripts beside the lab.** A script long enough to bury its station's story (about 40 lines or more) goes in `docs/lessons/<slug>/`, and the Variables block names that folder. The station runs it from there and shows only the lines that hold the mechanism. A shorter script stays inline as a heredoc.
+- **Code beside the lab.** Every script and every file the lab hands the reader (a converter, a scorer, a config override) goes in `docs/lessons/<slug>/`, whatever its length. The Variables block names that folder. A `bash` block holds only commands the reader types: no heredoc that writes code, no `python -c` longer than one expression. A heredoc stays only for a few lines whose content needs the reader's shell variables (a `.local.sh` that holds `$LAB`). Each script opens with a docstring: what it prints, and one usage line. The station runs it from the folder and quotes only the lines that hold the mechanism. Why: the reader opens, reruns and diffs a file; a heredoc they must copy whole and cannot rerun alone.
+
+  Layout, from a lab on BEVFusion with nuScenes. The lab keeps its own pixi environment in the folder:
+
+  ```
+  docs/lessons/bevfusion-nuscenes.md
+  docs/lessons/bevfusion-nuscenes/
+    pixi.toml             # the lab's environment; $PY runs from it
+    nusc_tables.py        # station 3
+    merge_params.py       # station 5, 13 lines: short scripts go here too
+    nusc_overrides.yaml   # station 5, a config file the lab hands over
+  ```
+
+  Variables block:
+
+  ```bash
+  export LESSON=$MONO/docs/lessons/bevfusion-nuscenes   # this lab's scripts and pixi env
+  export PY="pixi run --manifest-path $LESSON/pixi.toml python"
+  ```
+
+  Not this, in a station:
+
+  ```bash
+  cat > $LAB/merge.py <<'EOF'
+  import sys, yaml
+  base, over = (yaml.safe_load(open(p)) for p in sys.argv[1:3])
+  ...
+  EOF
+  python3 $LAB/merge.py base.yaml overrides.yaml out.yaml
+  ```
+
+  This:
+
+  ```bash
+  cat $LESSON/nusc_overrides.yaml
+  $PY $LESSON/merge_params.py $BASE $LESSON/nusc_overrides.yaml $LAB/nusc_perception.yaml
+  ```
+
+  The heredoc that stays: its lines need the reader's shell values, so no static file can hold them.
+
+  ```bash
+  cat > $MONO/watod-config.local.sh <<EOF
+  export CUDASM=$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader | head -1 | tr -d .)
+  export BAG_DIRECTORY=$LAB/bags
+  EOF
+  ```
 - **Skippable.** Each heading says what the station teaches, so a reader who knows it jumps to the checkpoint.
 - **One sitting.** The reader's time is 60 minutes or less, downloads excluded. Split a longer lab into two and say where.
 - **Diagrams for shape.** Draw one (Mermaid) where the content is a shape: a frame tree, a data flow, a timeline. Text carries the rest.

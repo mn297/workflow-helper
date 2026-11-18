@@ -22,6 +22,6 @@ Build the stations from these kinds, in the order the data flows through the too
 - **Switch one term off, then turn it up.** Rerun with one cost term at zero and at ten times its default. The outputs show what the term buys.
 - **Reproduce a number.** Rebuild a number the tool printed from the files it wrote, and state the tolerance in the checkpoint. This is the strongest proof of understanding a lab can give.
 - **Profile.** Read the tool's profiler, or time each stage. Say what share of the run each stage takes.
-- **Read the output files as data.** Open each file the tool wrote, name its fields, and load it in a few lines of Python.
+- **Read the output files as data.** Open each file the tool wrote, name its fields, and load it with a short script in the lesson folder.
 
 Each **Because** line cites the file and the function, at the pinned commit, that hold the mechanism it explains.
