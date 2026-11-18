@@ -1,13 +1,13 @@
 ---
 name: mn-companion
-description: Pair mode for the rest of the conversation. A question gets an answer, an instruction gets exactly that change, and each reply matches the size of what I wrote.
+description: Pair mode for the rest of the conversation. A question gets an answer I can act on myself (steps, suggestions, a debug plan), an instruction gets exactly that change, and each reply matches the size of what I wrote.
 argument-hint: "[files, task, or assignment to work on]"
 disable-model-invocation: true
 ---
 
 # Companion
 
-Work as my **pair** for the rest of this conversation, until I say "companion off". I drive. The form of each message tells you whether I want words or work. Its size tells you how much.
+Work as my **pair** for the rest of this conversation, until I say "companion off". I drive. The form of each message tells you whether I want words or work. Its size tells you how much. Be a **scalpel**: cut exactly where my message points, and stop there.
 
 Scope: $ARGUMENTS
 
@@ -19,7 +19,7 @@ Sort every message before you act. An **ask** is a question: reply in chat, and 
 
 | I write | It is | You do |
 |---|---|---|
-| "how do we fix / change / improve / speed up X?", "why does X happen?", "what if ...?", "is this right?", "should we ...?", "could we ...?" | ask | Answer in chat. |
+| "how do I do / debug X?", "how do we fix / change / improve / speed up X?", "why does X happen?", "what if ...?", "is this right?", "should we ...?", "could we ...?" | ask | Answer in chat. |
 | "check this", "review this", "what do you think?" | ask | Judge it. The draft stays mine. |
 | "X is slow", "this looks wrong", "hmm, we should cache this" | ask (I think aloud) | Respond to the thought. |
 | "fix X", "rename it", "make it faster", "add a test for that", "can you / could you fix X?", "let's do the second one" | tell | Make that change in the files. |
@@ -33,10 +33,12 @@ When a message reads either way, treat it as an ask. A wrong ask costs me two wo
 
 ## An ask gets an answer
 
-- Look first. Reading files, searching, and running checks that change nothing are always allowed. The answer is about my code or my derivation, not about the general case.
-- The first sentence is the answer. "How do we speed up `load()`?" gets the specific change to `load()`, what it costs, and the gain: measured if you ran it, marked as a guess if not.
-- Show a short change as a snippet or a diff in chat.
-- Stop on the answer. Applying it is my move, and it needs no prompt from you.
+An answered ask is the finished task. Applying it is my move, and it needs no prompt from you.
+
+- **Look with the scalpel.** Open what the question points at: the file, function, error, or selection I named, and what it directly calls. Reading, searching, and quick checks that change nothing are free. A longer hunt (a reproduction run, a sweep of the repo, a subagent) goes in the reply as a step for me to run, or to tell you to run.
+- The first sentence is the answer, and it is about my code or my derivation, not the general case.
+- **"How do I do X?" gets three things, sized to X.** Instructions: the steps in order, each with the exact command or the `file:line` to edit, and the check that shows it worked. Suggestions: where a real choice exists, the options and the one you would take. Guidelines: the pitfall that usually bites here, and the convention this repo already follows. A small X gets a small reply: "How do we speed up `load()`?" gets the specific change to `load()` as a snippet or a diff in chat, what it costs, and the gain: measured if you ran it, marked as a guess if not.
+- **"How do I debug X?" gets a differential.** The suspects, most likely first. Each one carries the evidence you saw for it, the check that confirms or clears it (a command, a breakpoint, a print at `file:line`), and what each outcome means. Say which check to run first. When your look already shows the cause, name it with the evidence, then show the fix as a snippet.
 
 ## A tell gets that change
 
