@@ -2,7 +2,7 @@
 
 A spec is the one file a planning session hands to a fresh implementing session. The agent reads it with no other context. A human reviews it before and after.
 
-This format cuts the work into **step chapters**. Each chapter holds everything one step needs: goal, files, requirements, contracts, tests and gate. A reviewer reads §1 to §3 and knows what changes, in what order, and how each step is checked. An agent that resumes at step N reads §1 to §5 and chapter N, and builds.
+This format cuts the work into **step chapters**. Each chapter holds everything one step needs: goal, files, requirements, contracts, tests and gate. A reviewer reads §1 to §3 and knows what changes, in what order, and how each step is checked. The Goal and Demo of each chapter then show the reviewer what each step looks like when it works. An agent that resumes at step N reads §1 to §5 and chapter N, and builds.
 
 It replaces [`spec-format.md`](spec-format.md) for new specs. That format sorts the work by kind (requirements by part, files by path, tests by ID, steps last), so one step's work sits in four places, joined only by IDs. Agents miss items in that join, most of all after a context compaction or a fresh-session resume. A chapter is also a ready prompt for one subagent.
 
@@ -14,9 +14,9 @@ Headings in this order. Each line says what goes in and why.
 
 | # | Section | What goes in | Why |
 |---|---|---|---|
-| 0 | Header table | status and date, branch and base, state file path, test commands, notation line | reader sees where to work and how to check before anything else |
+| 0 | Header table | status and date, branch and base, state file path, test commands, reviewer path line, notation line | reader sees where to work, what to read and how to check before anything else |
 | 1 | Result | one paragraph, then **Done when**: 3 to 6 observable checks, each said in words, then its test IDs | answer first; an agent stops when work looks done unless it has a check |
-| 2 | Change at a glance | a Today diagram; an After diagram with each node marked new or changed; a table Today, After, Step that names every module created, split, moved or deleted; a short "Stays the same" list | the reviewer sees the diff before the detail; the agent sees what to delete |
+| 2 | Change at a glance | a Today diagram; an After diagram with each node marked new or changed and with its step; a table Today, After, Step that names every module created, split, moved or deleted; a short "Stays the same" list | the reviewer sees the diff before the detail; the agent sees what to delete |
 | 3 | Step map | table: step, what works after it, main files, gate in words | the index of the chapters and the build order, on one screen |
 | 4 | Context | problem (the owner's words, one story of what fails today), terms, scope (out of scope, anti-goals as MUST NOT rules), facts tagged **measured**, **read** or **assumed**, open questions | the why, read once |
 | 5 | Seams | the interfaces between parts and the flows across them: shared contracts, on-disk formats, sequence and state diagrams, import boundaries; "Why" folded in `<details>` | every step builds against them; one source of truth, so chapters point here instead of copying |
@@ -37,6 +37,8 @@ Every chapter has these parts, in this order, with these bold labels:
 ## Step N: <title>
 
 **Goal.** One sentence: what works after this step that did not work before.
+
+**Demo.** What the owner sees when the step works: the command and its output, or a sketch of the screen, in a `text` block of about 15 lines at most. Above the block: "Expected output, not measured; the builder replaces it with the real output at the gate."
 
 **Start state.** What earlier steps left that this step uses. Which tests already fail, and which step fixes them.
 
@@ -61,6 +63,7 @@ Every chapter has these parts, in this order, with these bold labels:
 Rules for chapters:
 
 - §5 holds the seams. A chapter holds its step's insides: rule tables, algorithms, command output, its own routes and settings. A chapter plus §5, plus the code earlier steps wrote, is enough to build its step.
+- The Demo shows one run that works, with real names and plausible numbers. A step with nothing new to see shows its gate command and the pass line. The Demo illustrates; the Tests table is the contract. At the gate the builder puts the real output in the block and deletes the "Expected output" line.
 - Record goldens of the old code in the first step that changes it, before anything is deleted.
 - A file that two steps touch appears in both Changes tables. Each row says that step's change only.
 - Each requirement lives in one chapter: the step that builds it.
@@ -69,12 +72,25 @@ Rules for chapters:
 - A chapter longer than about 150 lines is two steps.
 - Work that only the owner can do (keys, hardware, accounts, live services) is the last chapter.
 
+## Language
+
+The reader has only this file and cannot ask back. Write plain English that has one reading.
+
+- Short sentences, active voice, simple tenses. Answer first. About 20 words for an instruction, 25 for a description. One instruction per sentence.
+- Write full sentences, each with its subject, verb and articles. A dropped word saves one token and can leave two readings.
+- Name the actor: "the runner writes the manifest", not "the manifest is written".
+- One term, one meaning, for the whole file. Define each term in §4 at its first use, then repeat that exact word. A second word for the same thing reads as a second thing.
+- Repeat the noun where "it" or "this" could point to two things.
+- Condition first, then the action: "If the lock is held, the runner exits with code 1."
+- Keep hedges that carry meaning ("may", "likely", "untested"). Never turn a guess into a flat claim.
+- Shorten by structure: a table for parallel facts, a pointer in place of a copy, a deleted sentence that carries no fact. The grammar stays whole.
+
+The `simple-english` skill (Plain mode, document rules) fits as a second pass, with two exceptions: keep the hedges and the uppercase RFC 2119 words, and keep the bold part labels.
+
 ## Writing rules
 
-- Short sentences, active voice, simple tenses. Answer first. Define a term at first use.
-- Keep hedges that carry meaning ("may", "likely", "untested"). Never turn a guess into a flat claim.
 - Uppercase MUST, SHALL, MUST NOT, MAY carry RFC 2119 force. Lowercase "must" is prose.
-- Numbers with units. Say how each number was found.
+- Numbers with units, in place of "fast", "small" or "soon". Say how each number was found; where no number exists, write "not measured".
 - Name files by path. Name functions and flags only where the reader has to go there.
 - Say each check in words first, then give its IDs. IDs point to text; they never replace it.
 - Write the file in reading order. A "read §7, then §6" line means the order is wrong.
@@ -119,13 +135,13 @@ Decisions taken after a builder check or a review go in the same table with "aft
 - Use `flowchart` for structure and data flow, `sequenceDiagram` for one flow in time, `stateDiagram-v2` for a mode machine, `erDiagram` for stored data. Avoid Mermaid's C4 syntax; it is experimental and lays out by source order.
 - Under about 15 nodes per diagram. A label on every arrow, more than one word. A title or one sentence above the block.
 - The same facts in text. The requirements, not the picture, are the contract.
-- §2 diagrams: mark each node of the After diagram in its label text, `(new)` or `(changed)`. A `classDef` colour may repeat the mark, never replace it. Deleted parts appear only in the Today diagram and in the change table.
+- §2 diagrams: mark each node of the After diagram in its label text, with its step: `(new, step 4)` or `(changed, step 1)`. A `classDef` colour may repeat the mark, never replace it. Deleted parts appear only in the Today diagram and in the change table.
 - Gotchas: a lowercase `end` as node text breaks flowcharts and sequence diagrams; a node starting with `o` or `x` right after an arrow misparses; quote labels with punctuation; HTML entities such as `&lt;` vanish, so write `DAY` not `<day>`; a semicolon inside a `stateDiagram` note splits it; misspelled settings fail silently.
 - Validate before committing. Headless Chromium with Playwright and `mermaid.parse` from a CDN build checks every block in a few seconds. GitHub and Obsidian both render `mermaid` fences.
 
 ## Length
 
-§1 to §3 read in about 5 minutes (about 100 lines); that is the reviewer's path. A chapter reads in about 5 minutes (under about 150 lines). The whole file matters less: the agent reads §1 to §5 and one chapter at a time. Past about 10 steps, split the work into two specs.
+§1 to §3 read in about 5 minutes (about 100 lines). The reviewer's path is §1 to §3, then the Goal and Demo of each chapter, then Decisions; the header's reviewer path line says so. A chapter reads in about 5 minutes (under about 150 lines). The whole file matters less: the agent reads §1 to §5 and one chapter at a time. Past about 10 steps, split the work into two specs.
 
 ## Process around the file
 
@@ -137,9 +153,12 @@ Decisions taken after a builder check or a review go in the same table with "aft
 ## Checklist before commit
 
 - Done-when list has 3 to 6 checks, each said in words and naming tests.
-- The §2 change table names every module created, split, moved or deleted, with its step.
+- The header has the reviewer path line.
+- The §2 change table names every module created, split, moved or deleted, with its step. Every node of the After diagram names the same step.
 - Step map rows match the chapter headings, one to one.
-- Every chapter has the seven parts in order.
+- Every chapter has the eight parts in order.
+- Every Demo has its "Expected output" line, or holds real output.
+- Each term has one name in the whole file. Every sentence has its subject and articles.
 - Every requirement sits in exactly one chapter and has a test ID. Every test row names a requirement, or for a measurement, a decision.
 - Every gate ends with a "State file:" line.
 - No test sits in a chapter before the step whose code it needs.
