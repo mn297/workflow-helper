@@ -8,6 +8,10 @@ It replaces [`spec-format.md`](spec-format.md) for new specs. That format sorts 
 
 Sources: EARS requirement patterns (Mavin), RFC 2119 keywords, Gherkin Given/When/Then, ADR columns (Nygard, MADR), Google design-doc non-goals, GitHub spec-kit's clarification marker and exact paths, OpenAI ExecPlans (self-contained, milestones that each verify on their own), Claude Code best practices ("define done").
 
+## When to use
+
+Use this format only for a spec the owner asked for: one file that a fresh session builds from. A brainstorm, a plan, design notes and research notes stay free-form. Settle the design first; cut the work into step chapters after.
+
 ## Outline
 
 Headings in this order. Each line says what goes in and why.

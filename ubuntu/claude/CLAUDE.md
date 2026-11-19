@@ -1,4 +1,11 @@
 
+## Personal email
+
+Never write the owner's personal email address (the Outlook one) into a file, commit, git config,
+package manifest, log or request. Use `mn297@users.noreply.github.com` for git identity and for every
+author or maintainer field (`package.xml`, `setup.py`, `pyproject.toml`, `Cargo.toml`). Before a
+commit, check that the staged diff and the commit's author and committer carry no personal address.
+
 ## Docs writing
 
 When writing docs (README, runbook, spec, report, agent prompt): short sentences, active voice, simple tenses.
@@ -7,14 +14,23 @@ Keep hedges that carry meaning ("may", "likely", "untested"): never turn a guess
 
 ## Specs for a fresh session
 
-A plan for big-bang work is one self-contained spec in `docs/specs/`, in the format of
-`~/workflow-helper/spec-format-steps.md`: read that file before writing or recutting a spec. The owner
-sends the one spec file to a fresh session, so it carries everything: "Done when" checks first, a
-change-at-a-glance and a step map, one chapter per step (goal, files, requirements, design, tests,
-gate), one decisions table, and a closing "How to run this" section. Write no separate prompt or
-handoff file. Run the builder check, commit the spec and stop; do not launch implementers from the
+Write a spec only when the owner asks for one ("write the spec", "spec this", "recut the spec") or
+asks for a file to hand to a fresh session. Then write one self-contained file in `docs/specs/`, in
+the format of `~/workflow-helper/spec-format-steps.md`: read that file first. Write no separate prompt
+or handoff file. Run the builder check, commit the spec and stop; do not launch implementers from the
 planning session. The older `~/workflow-helper/spec-format.md` stays only for reading specs already
 written in it.
+
+Every other markdown file stays free-form: a brainstorm, a plan, design notes, research notes, an
+options memo, a plan-mode plan. Choose the structure that fits the problem. Do not use the spec
+format's sections, requirement IDs or test tables there, and do not put such a file in `docs/specs/`.
+When the owner's wish is unclear, write free-form and offer the spec in one line.
+
+## Owner checks
+
+Run every check you can run yourself, and show the real output. Ask the owner to run a command only
+when it needs their hands, eyes, hardware, keys or accounts. Then give one command that writes its
+output to a file you can read, and state the result you expect before the owner runs it.
 
 ## Docstrings and comments
 

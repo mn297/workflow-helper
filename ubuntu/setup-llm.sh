@@ -132,14 +132,15 @@ run_maybe_tty() {
 	"$@"
 }
 
-# Copy the local caveman hook, status line script, and user CLAUDE.md, and
+# Copy the local caveman hook and status line script, link the user CLAUDE.md, and
 # wire them into ~/.claude/settings.json without duplicating a hook entry.
 install_claude_user_files() {
 	local hook_dst="$HOME/.claude/hooks/caveman.sh"
 	mkdir -p "$HOME/.claude/hooks"
 	cp "$REPO/ubuntu/claude/hooks/caveman.sh" "$hook_dst"
 	chmod +x "$hook_dst"
-	cp "$REPO/ubuntu/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+	# A link keeps one source of truth. A copy drifts when someone edits the live file, and the next run erases those edits.
+	ln -sfn "$REPO/ubuntu/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 	cp "$REPO/ubuntu/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 	# The status line script parses its JSON input with jq.
 	command -v jq >/dev/null || sudo apt install -y jq
