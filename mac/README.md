@@ -11,6 +11,29 @@ cp ~/workflow-helper/mac/cursor/keybindings.json ~/Library/Application\ Support/
 
 See [`cursor/README.md`](cursor/README.md) for the full map. `./setup.sh` copies the same file after installing Cursor.
 
+## zsh history per terminal
+
+Up arrow recalls only commands typed in the same terminal. Two open terminals never see each other's commands. A new terminal starts with the commands of every terminal that has already closed. The setup is the History block and the Up/Down `bindkey` lines in [`.zshrc`](.zshrc). Copy both into `~/.zshrc`, then open a new terminal.
+
+| File | Holds |
+|---|---|
+| `~/.zsh_history_sessions/zsh-<pid>.hist` | Commands of one open terminal, written as you type |
+| `~/.zsh_history` | Commands of closed terminals, loaded by each new terminal |
+
+When a terminal exits, its file is appended to `~/.zsh_history`. A terminal that was killed (for example, Cursor crashed) leaves its file behind. The next new terminal appends that file. Commands that start with a space are not saved.
+
+Without the `bindkey` lines, Up in Cursor does not reach history. Cursor's shell integration adds prompt lines, so macOS's default `up-line-or-search` never gets to history.
+
+## zsh comments
+
+Interactive zsh does not treat `#` as a comment unless this is set (already in [`.zshrc`](.zshrc)):
+
+```bash
+setopt INTERACTIVE_COMMENTS
+```
+
+Without it, `~12` in a pasted `# ... ~12 fps` note is a directory-stack lookup and the line dies with `not enough directory stack entries`.
+
 ## zsh syntax highlighting
 
 Command colors as you type. Plugin lives in `~/.zsh/zsh-syntax-highlighting` (must be sourced last in `.zshrc`).

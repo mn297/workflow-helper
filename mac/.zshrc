@@ -131,5 +131,64 @@ alias ls='ls -G'
 alias ll='ls -alhF'
 export HOST="localhost"
 
+# History: each open terminal keeps its own list, so Up never recalls a
+# command typed in another open terminal. A new terminal starts with the
+# commands of every terminal that has already closed.
+typeset -g HIST_ARCHIVE="${HOME}/.zsh_history"
+typeset -g HIST_DIR="${HOME}/.zsh_history_sessions"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt APPEND_HISTORY INC_APPEND_HISTORY
+setopt HIST_IGNORE_SPACE HIST_REDUCE_BLANKS HIST_FCNTL_LOCK HIST_SAVE_BY_COPY
+unsetopt SHARE_HISTORY
+
+# Move a closed terminal's history into the archive. mv claims the file
+# first, so two shells starting together cannot both append it.
+_hist_archive() {
+  local claimed="$1.$$.archiving"
+  mv -f -- "$1" "$claimed" 2>/dev/null || return
+  cat -- "$claimed" >> "$HIST_ARCHIVE" && rm -f -- "$claimed"
+}
+
+_hist_on_exit() {
+  # Non-interactive shells that inherit these functions (e.g. tool
+  # snapshots) must not archive a terminal that is still open.
+  [[ $HISTFILE == "${HIST_DIR}/zsh-$$.hist" ]] || return
+  _hist_archive "$HISTFILE"
+  if (( $(wc -l < "$HIST_ARCHIVE") > SAVEHIST * 6 / 5 )); then
+    tail -n $SAVEHIST -- "$HIST_ARCHIVE" > "$HIST_ARCHIVE.$$" &&
+      mv -f -- "$HIST_ARCHIVE.$$" "$HIST_ARCHIVE"
+  fi
+}
+
+if [[ -o interactive ]]; then
+  [[ -d $HIST_DIR ]] || mkdir -p -- "$HIST_DIR"
+  # Terminals that were killed never ran their exit hook.
+  for _hist_file in "$HIST_DIR"/zsh-*.hist(N); do
+    _hist_pid="${${_hist_file:t}#zsh-}"
+    _hist_pid="${_hist_pid%.hist}"
+    # A file named after this shell's PID belongs to a dead terminal whose PID was reused.
+    if [[ $_hist_pid == $$ ]] || ! kill -0 "$_hist_pid" 2>/dev/null; then
+      _hist_archive "$_hist_file"
+    fi
+  done
+  unset _hist_file _hist_pid
+
+  HISTFILE="${HIST_DIR}/zsh-$$.hist"
+  [[ -r $HIST_ARCHIVE ]] && fc -R "$HIST_ARCHIVE"
+  autoload -Uz add-zsh-hook
+  add-zsh-hook zshexit _hist_on_exit
+fi
+
+# macOS binds Up/Down to up-line-or-search. Cursor's shell integration
+# adds prompt lines, so that widget never reaches command history.
+bindkey '^[[A' history-beginning-search-backward
+bindkey '^[[B' history-beginning-search-forward
+bindkey '^[OA' history-beginning-search-backward
+bindkey '^[OB' history-beginning-search-forward
+
+# Pasted "# ... ~12 ..." must stay a comment. Otherwise ~12 is a directory-stack entry.
+setopt INTERACTIVE_COMMENTS
+
 # Must be last: command colors as you type
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
