@@ -127,10 +127,10 @@ if run_section apps; then
 	mkdir -p "$HOME/.config/Cursor/User"
 	cp "$HERE/cursor/keybindings.json" "$HOME/.config/Cursor/User/keybindings.json"
 
-	# Shared bash history so Ctrl+R sees commands from other terminals
-	# (including Cursor). Idempotent: the snippet is a no-op if already present.
-	say "Installing shared bash history"
-	if grep -q '__sync_bash_history' "$HOME/.bashrc" 2>/dev/null; then
+	# Per-terminal bash history so Up recalls only this terminal's commands
+	# (including Cursor). Idempotent: skipped if already present.
+	say "Installing per-terminal bash history"
+	if grep -q '__hist_on_exit' "$HOME/.bashrc" 2>/dev/null; then
 		echo "already in ~/.bashrc"
 	else
 		printf '\n' >>"$HOME/.bashrc"
